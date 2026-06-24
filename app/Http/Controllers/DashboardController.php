@@ -1,0 +1,153 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+
+use App\Models\Category;
+use App\Models\Transaction;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
+use Inertia\Response;
+
+class DashboardController extends Controller
+{
+    public function index(Request $request): Response
+    {
+        $user = Auth::user();
+        
+        // Default to current month if not specified
+        $month = $request->input('month', Carbon::now()->format('Y-m'));
+        $startDate = Carbon::createFromFormat('Y-m', $month)->startOfMonth();
+        $endDate = Carbon::createFromFormat('Y-m', $month)->endOfMonth();
+
+        // 1. Overall Balance (all-time)
+        $totalIncomeAllTime = $user->transactions()
+            ->where('type', 'income')
+            ->sum('amount');
+            
+        $totalExpenseAllTime = $user->transactions()
+            ->where('type', 'expense')
+            ->sum('amount');
+            
+        $netBalance = $totalIncomeAllTime - $totalExpenseAllTime;
+
+        // 2. Monthly Income
+        $monthlyIncome = $user->transactions()
+            ->where('type', 'income')
+            ->whereBetween('transaction_date', [$startDate, $endDate])
+            ->sum('amount');
+
+        // 3. Monthly Expenses
+        $monthlyExpenses = $user->transactions()
+            ->where('type', 'expense')
+            ->whereBetween('transaction_date', [$startDate, $endDate])
+            ->sum('amount');
+
+        // 4. Categories with budget limit and actual spending for this month
+        $categoriesData = $user->categories()
+            ->get()
+            ->map(function (Category $category) use ($startDate, $endDate, $month) {
+                // Sum of expenses for this category in the month
+                $spent = $category->transactions()
+                    ->where('type', 'expense')
+                    ->whereBetween('transaction_date', [$startDate, $endDate])
+                    ->sum('amount');
+
+                // Sum of income for this category in the month
+                $earned = $category->transactions()
+                    ->where('type', 'income')
+                    ->whereBetween('transaction_date', [$startDate, $endDate])
+                    ->sum('amount');
+
+                // Find budget limit for this month
+                $budget = $category->budgets()
+                    ->where('month', $month)
+                    ->first();
+
+                $limit = $budget ? (float) $budget->amount : 0.0;
+                $percentage = $limit > 0 ? round(($spent / $limit) * 100, 2) : 0.0;
+
+                return [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'type' => $category->type,
+                    'color' => $category->color ?? '#3B82F6',
+                    'spent' => (float) $spent,
+                    'earned' => (float) $earned,
+                    'budget_limit' => $limit,
+                    'percentage_used' => $percentage,
+                ];
+            });
+
+        // 5. User accounts list with current balances
+        $accountsData = $user->accounts()
+            ->get()
+            ->map(function ($account) {
+                $totalIncome = $account->transactions()
+                    ->where('type', 'income')
+                    ->sum('amount');
+                    
+                $totalExpense = $account->transactions()
+                    ->where('type', 'expense')
+                    ->sum('amount');
+                    
+                return [
+                    'id' => $account->id,
+                    'name' => $account->name,
+                    'type' => $account->type,
+                    'initial_balance' => (float) $account->initial_balance,
+                    'color' => $account->color ?? '#6366f1',
+                    'current_balance' => round((float) $account->initial_balance + (float) $totalIncome - (float) $totalExpense, 2),
+                ];
+            });
+
+        // 6. Recent Transaction ledger (all transactions in the selected month) with categories and accounts
+        $recentTransactions = $user->transactions()
+            ->with(['category', 'account', 'transferTransaction.account'])
+            ->whereBetween('transaction_date', [$startDate, $endDate])
+            ->orderBy('transaction_date', 'desc')
+            ->orderBy('id', 'desc')
+            ->get()
+            ->map(function (Transaction $tx) {
+                return [
+                    'id' => $tx->id,
+                    'amount' => (float) $tx->amount,
+                    'type' => $tx->type,
+                    'transaction_date' => $tx->transaction_date->format('Y-m-d'),
+                    'description' => $tx->description,
+                    'category' => $tx->category ? [
+                        'id' => $tx->category->id,
+                        'name' => $tx->category->name,
+                        'color' => $tx->category->color ?? '#3B82F6',
+                    ] : null,
+                    'account' => $tx->account ? [
+                        'id' => $tx->account->id,
+                        'name' => $tx->account->name,
+                        'color' => $tx->account->color ?? '#6366f1',
+                        'type' => $tx->account->type,
+                    ] : null,
+                    'is_transfer' => (bool) $tx->is_transfer,
+                    'transfer_account' => ($tx->is_transfer && $tx->transferTransaction && $tx->transferTransaction->account) ? [
+                        'id' => $tx->transferTransaction->account->id,
+                        'name' => $tx->transferTransaction->account->name,
+                        'color' => $tx->transferTransaction->account->color ?? '#6366f1',
+                        'type' => $tx->transferTransaction->account->type,
+                    ] : null,
+                ];
+            });
+
+        return Inertia::render('Dashboard', [
+            'stats' => [
+                'net_balance' => (float) $netBalance,
+                'monthly_income' => (float) $monthlyIncome,
+                'monthly_expenses' => (float) $monthlyExpenses,
+            ],
+            'categories' => $categoriesData,
+            'accounts' => $accountsData,
+            'recent_transactions' => $recentTransactions,
+            'current_month' => $month,
+        ]);
+    }
+}
