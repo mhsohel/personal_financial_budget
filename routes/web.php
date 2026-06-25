@@ -47,6 +47,7 @@ Route::middleware('auth')->group(function () {
 
     // Reports
     Route::get('/reports', [App\Http\Controllers\ReportController::class, 'index'])->name('reports.index');
+    Route::get('/reports/forecast', [App\Http\Controllers\ReportController::class, 'forecast'])->name('reports.forecast');
 
     // SaaS Licenses
     Route::get('/licenses', [App\Http\Controllers\LicenseController::class, 'index'])->name('licenses.index');

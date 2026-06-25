@@ -1,6 +1,6 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
 const props = defineProps({
@@ -179,9 +179,27 @@ const totalAccountsSummary = computed(() => {
 
     <AuthenticatedLayout>
         <template #header>
-            <h2 class="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-                Reports & Predictions
-            </h2>
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <h2 class="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                    Reports & Predictions
+                </h2>
+                <div class="flex rounded-xl bg-slate-100 dark:bg-slate-800/80 p-1 self-start md:self-center border border-slate-200/55 dark:border-slate-700/60 shadow-sm">
+                    <Link 
+                        :href="route('reports.index')" 
+                        class="px-4 py-2 text-xs font-semibold rounded-lg transition-all"
+                        :class="route().current('reports.index') ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'"
+                    >
+                        Financial Trends
+                    </Link>
+                    <Link 
+                        :href="route('reports.forecast')" 
+                        class="px-4 py-2 text-xs font-semibold rounded-lg transition-all"
+                        :class="route().current('reports.forecast') ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'"
+                    >
+                        Unified 12M Forecast
+                    </Link>
+                </div>
+            </div>
         </template>
 
         <div class="py-8 bg-slate-50 dark:bg-slate-900 min-h-screen text-slate-900 dark:text-slate-100">

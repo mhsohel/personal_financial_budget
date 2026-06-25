@@ -51,6 +51,12 @@ const showingNavigationDropdown = ref(false);
                                     Reports & Projections
                                 </NavLink>
                                 <NavLink
+                                    :href="route('reports.forecast')"
+                                    :active="route().current('reports.forecast')"
+                                >
+                                    Forecast
+                                </NavLink>
+                                <NavLink
                                     :href="route('licenses.index')"
                                     :active="route().current('licenses.index')"
                                     
@@ -175,6 +181,12 @@ const showingNavigationDropdown = ref(false);
                             :active="route().current('reports.index')"
                         >
                             Reports & Projections
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('reports.forecast')"
+                            :active="route().current('reports.forecast')"
+                        >
+                            Forecast
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
                             :href="route('licenses.index')"
