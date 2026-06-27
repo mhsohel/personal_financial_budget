@@ -149,6 +149,17 @@ class LicenseController extends Controller
         return redirect()->back();
     }
 
+    public function updateLicense(StoreLicenseRequest $request, License $license): RedirectResponse
+    {
+        if ($license->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $license->update($request->validated());
+
+        return redirect()->back();
+    }
+
     public function logPayment(Request $request, License $license): RedirectResponse
     {
         if ($license->user_id !== Auth::id()) {

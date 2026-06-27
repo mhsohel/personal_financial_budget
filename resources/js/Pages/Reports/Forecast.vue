@@ -275,24 +275,24 @@ const healthScoreColor = computed(() => {
                     <h2 class="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                         Consolidated Forecast
                     </h2>
-                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                    <p class="text-sm text-slate-700 dark:text-slate-600 mt-1">
                         Predictive cash flow & asset projection combining SaaS contracts, outstanding loans, and budgets.
                     </p>
                 </div>
                 
                 <!-- Sibling Tab Navigation -->
-                <div class="flex rounded-xl bg-slate-100 dark:bg-slate-800/80 p-1 self-start md:self-center border border-slate-200/55 dark:border-slate-700/60 shadow-sm">
+                <div class="flex rounded-xl bg-slate-100 dark:bg-slate-900/80 p-1 self-start md:self-center border border-slate-200/55 dark:border-slate-800/60 shadow-sm">
                     <Link 
                         :href="route('reports.index')" 
                         class="px-4 py-2 text-xs font-semibold rounded-lg transition-all"
-                        :class="route().current('reports.index') ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'"
+                        :class="route().current('reports.index') ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-white shadow-sm' : 'text-slate-600 dark:text-slate-600 hover:text-slate-800 dark:hover:text-slate-200'"
                     >
                         Financial Trends
                     </Link>
                     <Link 
                         :href="route('reports.forecast')" 
                         class="px-4 py-2 text-xs font-semibold rounded-lg transition-all"
-                        :class="route().current('reports.forecast') ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'"
+                        :class="route().current('reports.forecast') ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-white shadow-sm' : 'text-slate-600 dark:text-slate-600 hover:text-slate-800 dark:hover:text-slate-200'"
                     >
                         Unified 12M Forecast
                     </Link>
@@ -300,7 +300,7 @@ const healthScoreColor = computed(() => {
             </div>
         </template>
 
-        <div class="py-8 bg-slate-50 dark:bg-slate-900 min-h-screen text-slate-900 dark:text-slate-100">
+        <div class="py-8 bg-slate-50 dark:bg-slate-950 min-h-screen text-slate-900 dark:text-slate-100">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-8">
                 
                 <!-- Main Layout Grid: Sidebar Controls on Left, Charts/Dash on Right -->
@@ -308,7 +308,7 @@ const healthScoreColor = computed(() => {
                     
                     <!-- Left Sidebar: Controls & Parameters (Span 4) -->
                     <div class="lg:col-span-4 space-y-6">
-                        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm space-y-6 sticky top-6">
+                        <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm space-y-6 sticky top-6">
                             <div>
                                 <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -316,7 +316,7 @@ const healthScoreColor = computed(() => {
                                     </svg>
                                     Simulation Parameters
                                 </h3>
-                                <p class="text-[11px] text-slate-400 mt-1 font-medium leading-relaxed">
+                                <p class="text-[11px] text-slate-600 mt-1 font-medium leading-relaxed">
                                     Adjust standard values below to recalculate all 12-month projections instantly.
                                 </p>
                             </div>
@@ -324,7 +324,7 @@ const healthScoreColor = computed(() => {
                             <!-- Slider: Income Growth -->
                             <div class="space-y-2">
                                 <div class="flex items-center justify-between">
-                                    <label class="text-xs font-bold uppercase tracking-wider text-slate-500">Income Growth</label>
+                                    <label class="text-xs font-bold uppercase tracking-wider text-slate-700">Income Growth</label>
                                     <span class="text-xs font-black text-indigo-650 dark:text-indigo-400">
                                         {{ incomeChange >= 0 ? '+' : '' }}{{ formatCurrency(incomeChange) }} /mo
                                     </span>
@@ -337,7 +337,7 @@ const healthScoreColor = computed(() => {
                                     v-model="incomeChange"
                                     class="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
                                 />
-                                <div class="flex justify-between text-[9px] text-slate-400 font-semibold">
+                                <div class="flex justify-between text-[9px] text-slate-600 font-semibold">
                                     <span>-$1,000</span>
                                     <span>Baseline (Avg)</span>
                                     <span>+$3,000</span>
@@ -347,7 +347,7 @@ const healthScoreColor = computed(() => {
                             <!-- Slider: Spending Cuts -->
                             <div class="space-y-2">
                                 <div class="flex items-center justify-between">
-                                    <label class="text-xs font-bold uppercase tracking-wider text-slate-500">Discretionary Cuts</label>
+                                    <label class="text-xs font-bold uppercase tracking-wider text-slate-700">Discretionary Cuts</label>
                                     <span class="text-xs font-black text-rose-600 dark:text-rose-400">
                                         -{{ expenseCutsPct }}% spending
                                     </span>
@@ -360,24 +360,24 @@ const healthScoreColor = computed(() => {
                                     v-model="expenseCutsPct"
                                     class="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
                                 />
-                                <div class="flex justify-between text-[9px] text-slate-400 font-semibold">
+                                <div class="flex justify-between text-[9px] text-slate-600 font-semibold">
                                     <span>No Cuts (0%)</span>
                                     <span>25% Cut</span>
                                     <span>50% Max</span>
                                 </div>
                             </div>
 
-                            <hr class="border-slate-100 dark:border-slate-700" />
+                            <hr class="border-slate-100 dark:border-slate-800" />
 
                             <!-- Toggles -->
                             <div class="space-y-4">
-                                <label class="text-xs font-bold uppercase tracking-wider text-slate-500 block">Forecast Inclusions</label>
+                                <label class="text-xs font-bold uppercase tracking-wider text-slate-700 block">Forecast Inclusions</label>
                                 
                                 <!-- Toggle: SaaS -->
                                 <label class="flex items-center justify-between cursor-pointer group">
                                     <div class="flex flex-col">
                                         <span class="text-xs font-bold text-slate-800 dark:text-slate-200">SaaS Subscriptions</span>
-                                        <span class="text-[10px] text-slate-400">Include renewals/contracts</span>
+                                        <span class="text-[10px] text-slate-600">Include renewals/contracts</span>
                                     </div>
                                     <div class="relative">
                                         <input type="checkbox" v-model="includeSaaS" class="sr-only peer" />
@@ -389,7 +389,7 @@ const healthScoreColor = computed(() => {
                                 <label class="flex items-center justify-between cursor-pointer group">
                                     <div class="flex flex-col">
                                         <span class="text-xs font-bold text-slate-800 dark:text-slate-200">Loans & Debts</span>
-                                        <span class="text-[10px] text-slate-400">Include repayments by due date</span>
+                                        <span class="text-[10px] text-slate-600">Include repayments by due date</span>
                                     </div>
                                     <div class="relative">
                                         <input type="checkbox" v-model="includeLoans" class="sr-only peer" />
@@ -399,10 +399,10 @@ const healthScoreColor = computed(() => {
                             </div>
 
                             <!-- Financial Score Card -->
-                            <div class="p-4 rounded-xl border border-slate-100 dark:border-slate-700/60 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/30">
+                            <div class="p-4 rounded-xl border border-slate-100 dark:border-slate-800/60 flex items-center justify-between bg-slate-50/50 dark:bg-slate-950/30">
                                 <div>
-                                    <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Runway Health Score</p>
-                                    <p class="text-[10px] text-slate-400 leading-normal mt-0.5 max-w-[160px]">Overall safety rating based on cash buffer & savings.</p>
+                                    <p class="text-xs font-bold uppercase tracking-wider text-slate-600">Runway Health Score</p>
+                                    <p class="text-[10px] text-slate-600 leading-normal mt-0.5 max-w-[160px]">Overall safety rating based on cash buffer & savings.</p>
                                 </div>
                                 <div class="w-14 h-14 rounded-full flex flex-col items-center justify-center font-extrabold text-lg shadow-sm border border-slate-100 dark:border-slate-750" :class="healthScoreColor">
                                     <span>{{ financialHealthScore }}</span>
@@ -417,46 +417,46 @@ const healthScoreColor = computed(() => {
                         
                         <!-- Core Forecast Stats -->
                         <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                            <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
-                                <p class="text-slate-400 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider">Current Liquid Bal.</p>
+                            <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800">
+                                <p class="text-slate-600 dark:text-slate-600 text-[10px] font-bold uppercase tracking-wider">Current Liquid Bal.</p>
                                 <h4 class="text-xl font-extrabold mt-1 text-slate-900 dark:text-white">
                                     {{ formatCurrency(starting_net_worth) }}
                                 </h4>
-                                <span class="text-[9px] text-slate-400 dark:text-slate-500 font-semibold">Starting Net Worth</span>
+                                <span class="text-[9px] text-slate-600 dark:text-slate-700 font-semibold">Starting Net Worth</span>
                             </div>
 
-                            <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
-                                <p class="text-slate-400 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider">Projected NW (1 Yr)</p>
+                            <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800">
+                                <p class="text-slate-600 dark:text-slate-600 text-[10px] font-bold uppercase tracking-wider">Projected NW (1 Yr)</p>
                                 <h4 class="text-xl font-extrabold mt-1" :class="endingNetWorth >= starting_net_worth ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-450'">
                                     {{ formatCurrency(endingNetWorth) }}
                                 </h4>
-                                <span class="text-[9px] text-slate-400 dark:text-slate-500 font-semibold">
+                                <span class="text-[9px] text-slate-600 dark:text-slate-700 font-semibold">
                                     {{ endingNetWorth >= starting_net_worth ? 'Growth:' : 'Deficit:' }} 
                                     {{ formatCurrency(Math.abs(endingNetWorth - starting_net_worth)) }}
                                 </span>
                             </div>
 
-                            <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
-                                <p class="text-slate-400 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider">Avg Projected Outflow</p>
+                            <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800">
+                                <p class="text-slate-600 dark:text-slate-600 text-[10px] font-bold uppercase tracking-wider">Avg Projected Outflow</p>
                                 <h4 class="text-xl font-extrabold mt-1 text-rose-600 dark:text-rose-400">
                                     {{ formatCurrency(avgProjectedExpense) }}
                                 </h4>
-                                <span class="text-[9px] text-slate-400 dark:text-slate-500 font-semibold">Includes SaaS & loan costs</span>
+                                <span class="text-[9px] text-slate-600 dark:text-slate-700 font-semibold">Includes SaaS & loan costs</span>
                             </div>
 
-                            <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
-                                <p class="text-slate-400 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider">Emergency Runway</p>
+                            <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800">
+                                <p class="text-slate-600 dark:text-slate-600 text-[10px] font-bold uppercase tracking-wider">Emergency Runway</p>
                                 <h4 class="text-xl font-extrabold mt-1 text-indigo-650 dark:text-indigo-400">
                                     {{ emergencyRunwayMonths }} Mo
                                 </h4>
-                                <span class="text-[9px] text-slate-400 dark:text-slate-500 font-semibold">
+                                <span class="text-[9px] text-slate-600 dark:text-slate-700 font-semibold">
                                     {{ emergencyRunwayMonths >= 6 ? 'Excellent Buffer' : 'Buffer too low (< 6M)' }}
                                 </span>
                             </div>
                         </div>
 
                         <!-- 12-Month Net Worth Projection Area Chart -->
-                        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6">
+                        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 p-6">
                             <div class="flex items-center justify-between mb-4">
                                 <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -500,7 +500,7 @@ const healthScoreColor = computed(() => {
                                             :x="paddingLeft - 8" 
                                             :y="tick.y + 4" 
                                             fill="currentColor" 
-                                            class="text-[9px] font-bold text-slate-400"
+                                            class="text-[9px] font-bold text-slate-600"
                                             text-anchor="end"
                                         >
                                             {{ formatCurrency(tick.value).replace(/\.00$/, '') }}
@@ -556,7 +556,7 @@ const healthScoreColor = computed(() => {
                                         :x="getX(0)" 
                                         :y="chartHeight - paddingBottom + 14" 
                                         fill="currentColor" 
-                                        class="text-[8px] font-bold text-slate-400"
+                                        class="text-[8px] font-bold text-slate-600"
                                         text-anchor="middle"
                                     >
                                         Current
@@ -567,7 +567,7 @@ const healthScoreColor = computed(() => {
                                         :x="getX(idx + 1)" 
                                         :y="chartHeight - paddingBottom + 14" 
                                         fill="currentColor" 
-                                        class="text-[8px] font-bold text-slate-400"
+                                        class="text-[8px] font-bold text-slate-600"
                                         text-anchor="middle"
                                     >
                                         {{ p.label.split(' ')[0] }}
@@ -657,7 +657,7 @@ const healthScoreColor = computed(() => {
                         </div>
 
                         <!-- Dynamic Inflow & Outflow Bars -->
-                        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6">
+                        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 p-6">
                             <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -687,7 +687,7 @@ const healthScoreColor = computed(() => {
                                             :x="paddingLeft - 8" 
                                             :y="paddingTop + (1 - tick) * drawHeight + 3" 
                                             fill="currentColor" 
-                                            class="text-[9px] font-bold text-slate-400"
+                                            class="text-[9px] font-bold text-slate-600"
                                             text-anchor="end"
                                         >
                                             {{ formatCurrency(maxMonthlyAmount * tick).replace(/\.00$/, '') }}
@@ -722,7 +722,7 @@ const healthScoreColor = computed(() => {
                                             :x="paddingLeft + (idx * (drawWidth / 12)) + (drawWidth / 24)" 
                                             :y="chartHeight - paddingBottom + 14" 
                                             fill="currentColor" 
-                                            class="text-[8px] font-bold text-slate-400"
+                                            class="text-[8px] font-bold text-slate-600"
                                             text-anchor="middle"
                                         >
                                             {{ p.label.split(' ')[0] }}
@@ -746,7 +746,7 @@ const healthScoreColor = computed(() => {
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             
                             <!-- Category Budget Health -->
-                            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 space-y-4">
+                            <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 p-6 space-y-4">
                                 <div>
                                     <h3 class="text-md font-bold text-slate-900 dark:text-white flex items-center gap-2">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -754,7 +754,7 @@ const healthScoreColor = computed(() => {
                                         </svg>
                                         Budget Risk Indicators
                                     </h3>
-                                    <p class="text-[10px] text-slate-400 mt-0.5 leading-normal">
+                                    <p class="text-[10px] text-slate-600 mt-0.5 leading-normal">
                                         Identifies categories where historical average spending exceeds budget limits.
                                     </p>
                                 </div>
@@ -767,7 +767,7 @@ const healthScoreColor = computed(() => {
                                     <div 
                                         v-for="b in budgets" 
                                         :key="b.category_id"
-                                        class="p-3.5 rounded-xl border border-slate-100 dark:border-slate-700/60 flex flex-col gap-2 hover:bg-slate-50/50 dark:hover:bg-slate-900/30 transition-all"
+                                        class="p-3.5 rounded-xl border border-slate-100 dark:border-slate-800/60 flex flex-col gap-2 hover:bg-slate-50/50 dark:hover:bg-slate-900/30 transition-all"
                                     >
                                         <div class="flex items-center justify-between">
                                             <span class="flex items-center gap-2 text-xs font-bold">
@@ -793,7 +793,7 @@ const healthScoreColor = computed(() => {
                                                     }"
                                                 ></div>
                                             </div>
-                                            <div class="flex justify-between text-[9px] font-semibold text-slate-400">
+                                            <div class="flex justify-between text-[9px] font-semibold text-slate-600">
                                                 <span>Avg Spent: {{ formatCurrency(b.avg_spend) }}/mo</span>
                                                 <span>Budget: {{ formatCurrency(b.limit) }}</span>
                                             </div>
@@ -803,7 +803,7 @@ const healthScoreColor = computed(() => {
                             </div>
 
                             <!-- Upcoming Timelines -->
-                            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 space-y-4">
+                            <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 p-6 space-y-4">
                                 <div>
                                     <h3 class="text-md font-bold text-slate-900 dark:text-white flex items-center gap-2">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -811,7 +811,7 @@ const healthScoreColor = computed(() => {
                                         </svg>
                                         Outflow Timeline (Next 12M)
                                     </h3>
-                                    <p class="text-[10px] text-slate-400 mt-0.5 leading-normal">
+                                    <p class="text-[10px] text-slate-600 mt-0.5 leading-normal">
                                         Timeline view of scheduled contracts and outstanding debts.
                                     </p>
                                 </div>
@@ -821,7 +821,7 @@ const healthScoreColor = computed(() => {
                                     <template v-for="p in projections" :key="p.month_key">
                                         <div 
                                             v-if="p.saasRenewals.length > 0 || p.dueLoans.length > 0"
-                                            class="p-3 rounded-xl border border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/20"
+                                            class="p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20"
                                         >
                                             <div class="text-[10px] font-black text-indigo-650 dark:text-indigo-400 uppercase tracking-wider mb-2">
                                                 {{ p.label }}

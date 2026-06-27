@@ -205,3 +205,77 @@ test('user can log a partial payment to an account without advancing renewal dat
     $bankData = collect($accountsData)->firstWhere('id', $account->id);
     expect($bankData['current_balance'])->toBe(1200.0);
 });
+
+test('user can update their client license', function () {
+    $user = User::factory()->create();
+    $client1 = Client::create([
+        'user_id' => $user->id,
+        'name' => 'SaaSClient',
+        'saas_name' => 'MySaaS',
+    ]);
+    $client2 = Client::create([
+        'user_id' => $user->id,
+        'name' => 'AnotherClient',
+        'saas_name' => 'OtherSaaS',
+    ]);
+
+    $license = License::create([
+        'user_id' => $user->id,
+        'client_id' => $client1->id,
+        'amount' => 199.00,
+        'billing_cycle' => 'monthly',
+        'next_renewal_date' => Carbon::now()->addMonth()->format('Y-m-d'),
+        'status' => 'active',
+    ]);
+
+    $response = $this->actingAs($user)->patch("/licenses/{$license->id}", [
+        'client_id' => $client2->id,
+        'amount' => 299.50,
+        'billing_cycle' => 'yearly',
+        'next_renewal_date' => Carbon::now()->addYear()->format('Y-m-d'),
+        'status' => 'inactive',
+    ]);
+
+    $response->assertRedirect();
+    $this->assertDatabaseHas('licenses', [
+        'id' => $license->id,
+        'client_id' => $client2->id,
+        'amount' => 299.50,
+        'billing_cycle' => 'yearly',
+        'status' => 'inactive',
+    ]);
+});
+
+test('user cannot update another user\'s client license', function () {
+    $user1 = User::factory()->create();
+    $user2 = User::factory()->create();
+    $client1 = Client::create([
+        'user_id' => $user1->id,
+        'name' => 'SaaSClient 1',
+        'saas_name' => 'MySaaS 1',
+    ]);
+    $client2 = Client::create([
+        'user_id' => $user2->id,
+        'name' => 'SaaSClient 2',
+        'saas_name' => 'MySaaS 2',
+    ]);
+
+    $license = License::create([
+        'user_id' => $user1->id,
+        'client_id' => $client1->id,
+        'amount' => 199.00,
+        'billing_cycle' => 'monthly',
+        'next_renewal_date' => Carbon::now()->addMonth()->format('Y-m-d'),
+        'status' => 'active',
+    ]);
+
+    $response = $this->actingAs($user2)->patch("/licenses/{$license->id}", [
+        'client_id' => $client2->id,
+        'amount' => 299.50,
+        'billing_cycle' => 'yearly',
+        'next_renewal_date' => Carbon::now()->addYear()->format('Y-m-d'),
+        'status' => 'inactive',
+    ]);
+
+    $response->assertStatus(403);
+});

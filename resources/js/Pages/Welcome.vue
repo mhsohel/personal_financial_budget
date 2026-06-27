@@ -223,7 +223,7 @@ const toggleFaq = (index) => {
                     <template v-else>
                         <Link
                             :href="route('login')"
-                            class="text-sm font-semibold text-slate-400 hover:text-white transition"
+                            class="text-sm font-semibold text-slate-600 hover:text-white transition"
                         >
                             Sign In
                         </Link>
@@ -255,7 +255,7 @@ const toggleFaq = (index) => {
                     </span>
                 </h1>
                 
-                <p class="text-base sm:text-lg text-slate-400 font-medium leading-relaxed max-w-xl mx-auto lg:mx-0">
+                <p class="text-base sm:text-lg text-slate-600 font-medium leading-relaxed max-w-xl mx-auto lg:mx-0">
                     Consolidate cash flows across bank accounts and mobile wallets. Track daily budgets, log lent/borrowed debts, execute transfers, and manage recurring client subscription revenues.
                 </p>
 
@@ -282,7 +282,7 @@ const toggleFaq = (index) => {
                     </a>
                 </div>
 
-                <div class="flex items-center justify-center lg:justify-start gap-6 pt-6 text-slate-500 text-xs font-bold">
+                <div class="flex items-center justify-center lg:justify-start gap-6 pt-6 text-slate-700 text-xs font-bold">
                     <div class="flex items-center gap-1.5">
                         <svg class="h-4.5 w-4.5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
@@ -310,7 +310,7 @@ const toggleFaq = (index) => {
                             <span class="w-3 h-3 rounded-full bg-rose-500 inline-block"></span>
                             <span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span>
                             <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
-                            <span class="ml-4 text-xs font-bold text-slate-500 tracking-wider">FINFLOW DEMO PLATFORM</span>
+                            <span class="ml-4 text-xs font-bold text-slate-700 tracking-wider">FINFLOW DEMO PLATFORM</span>
                         </div>
                         <div class="flex gap-2">
                             <button 
@@ -327,7 +327,7 @@ const toggleFaq = (index) => {
                     </div>
 
                     <!-- Simulator Tabs -->
-                    <div class="flex overflow-x-auto border-b border-slate-700/50 bg-slate-900/30 text-xs font-bold text-slate-400 whitespace-nowrap scrollbar-none">
+                    <div class="flex overflow-x-auto border-b border-slate-700/50 bg-slate-900/30 text-xs font-bold text-slate-600 whitespace-nowrap scrollbar-none">
                         <button 
                             @click="activeTab = 'ledger'"
                             :class="activeTab === 'ledger' ? 'text-indigo-405 border-b-2 border-indigo-500 bg-slate-800/60' : 'hover:text-white'"
@@ -373,11 +373,11 @@ const toggleFaq = (index) => {
                         <div v-if="activeTab === 'ledger'" class="space-y-6">
                             <!-- Simulated Budget Limit Bars -->
                             <div class="space-y-4">
-                                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Simulated Budgets (Limits)</h4>
+                                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">Simulated Budgets (Limits)</h4>
                                 <div v-for="bg in simBudgets" :key="bg.name" class="space-y-1">
                                     <div class="flex items-center justify-between text-xs font-bold">
                                         <span class="text-slate-300">{{ bg.name }}</span>
-                                        <span class="text-slate-400">${{ bg.spent }} / ${{ bg.limit }} ({{ bg.percentage }}%)</span>
+                                        <span class="text-slate-600">${{ bg.spent }} / ${{ bg.limit }} ({{ bg.percentage }}%)</span>
                                     </div>
                                     <div class="w-full bg-slate-900 rounded-full h-2 overflow-hidden border border-slate-700">
                                         <div 
@@ -390,7 +390,7 @@ const toggleFaq = (index) => {
 
                             <!-- Ledger Transactions List -->
                             <div class="space-y-2.5">
-                                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Simulated Recent Transactions</h4>
+                                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">Simulated Recent Transactions</h4>
                                 <div class="space-y-2 max-h-[140px] overflow-y-auto">
                                     <div 
                                         v-for="tx in simTransactions" 
@@ -405,7 +405,7 @@ const toggleFaq = (index) => {
                                             <span class="font-bold text-slate-200">{{ tx.desc }}</span>
                                         </div>
                                         <div class="flex items-center gap-3">
-                                            <span class="text-slate-500">{{ tx.date }}</span>
+                                            <span class="text-slate-700">{{ tx.date }}</span>
                                             <span 
                                                 class="font-black"
                                                 :class="tx.type === 'income' ? 'text-emerald-400' : 'text-rose-500'"
@@ -423,15 +423,15 @@ const toggleFaq = (index) => {
                             <!-- SaaS KPI metrics -->
                             <div class="grid grid-cols-3 gap-4">
                                 <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-700">
-                                    <span class="text-[9px] font-bold uppercase tracking-wider text-slate-500">Active SaaS Clients</span>
+                                    <span class="text-[9px] font-bold uppercase tracking-wider text-slate-700">Active SaaS Clients</span>
                                     <p class="text-xl font-extrabold text-indigo-400 mt-1">2</p>
                                 </div>
                                 <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-700">
-                                    <span class="text-[9px] font-bold uppercase tracking-wider text-slate-500">Monthly Revenue (MRR)</span>
+                                    <span class="text-[9px] font-bold uppercase tracking-wider text-slate-700">Monthly Revenue (MRR)</span>
                                     <p class="text-xl font-extrabold text-emerald-400 mt-1">${{ simMRR.toLocaleString() }}</p>
                                 </div>
                                 <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-700">
-                                    <span class="text-[9px] font-bold uppercase tracking-wider text-slate-500">Annualized Run Rate (ARR)</span>
+                                    <span class="text-[9px] font-bold uppercase tracking-wider text-slate-700">Annualized Run Rate (ARR)</span>
                                     <p class="text-xl font-extrabold text-emerald-400 mt-1">${{ simARR.toLocaleString() }}</p>
                                 </div>
                             </div>
@@ -441,7 +441,7 @@ const toggleFaq = (index) => {
                                 <div class="flex items-center justify-between">
                                     <div>
                                         <h5 class="text-sm font-extrabold text-white">Interactive Demonstration</h5>
-                                        <p class="text-[11px] text-slate-400 mt-0.5">Log an upcoming payment for SaaS client "Acme Corp" ($350/mo)</p>
+                                        <p class="text-[11px] text-slate-600 mt-0.5">Log an upcoming payment for SaaS client "Acme Corp" ($350/mo)</p>
                                     </div>
                                     <button 
                                         @click="simulatePay"
@@ -456,17 +456,17 @@ const toggleFaq = (index) => {
                                     <div class="py-2.5 flex items-center justify-between">
                                         <span class="font-bold text-slate-300">SpaceX (RocketControl)</span>
                                         <div class="flex items-center gap-3.5">
-                                            <span class="text-slate-400 font-bold">$2,500.00 / month</span>
+                                            <span class="text-slate-600 font-bold">$2,500.00 / month</span>
                                             <span class="px-2 py-0.5 rounded bg-emerald-950/40 text-emerald-400 border border-emerald-900/50 text-[10px] font-bold">Active</span>
                                         </div>
                                     </div>
                                     <div class="py-2.5 flex items-center justify-between">
                                         <div>
                                             <span class="font-bold text-slate-300">Acme Corp (ApiGateway)</span>
-                                            <p class="text-[10px] text-slate-400 mt-0.5">Renewal: {{ simAcmeRenewal }}</p>
+                                            <p class="text-[10px] text-slate-600 mt-0.5">Renewal: {{ simAcmeRenewal }}</p>
                                         </div>
                                         <div class="flex items-center gap-3.5">
-                                            <span class="text-slate-400 font-bold">$350.00 / month</span>
+                                            <span class="text-slate-600 font-bold">$350.00 / month</span>
                                             <span 
                                                 class="px-2 py-0.5 rounded text-[10px] font-bold"
                                                 :class="simAcmePaid ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-900/50' : 'bg-amber-950/40 text-amber-400 border border-amber-900/50'"
@@ -481,14 +481,14 @@ const toggleFaq = (index) => {
 
                         <!-- TAB 3: Multi-Account & Transfers -->
                         <div v-if="activeTab === 'accounts'" class="space-y-4">
-                            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Simulated Accounts & Balances</h4>
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">Simulated Accounts & Balances</h4>
                             
                             <div class="grid grid-cols-2 gap-4">
                                 <div v-for="acc in simAccounts" :key="acc.id" class="p-4 rounded-xl border border-slate-700 bg-slate-900/60 relative overflow-hidden">
                                     <!-- Decorative glow -->
                                     <div class="absolute -right-6 -bottom-6 w-20 h-20 rounded-full blur-xl opacity-20 bg-indigo-500"></div>
                                     
-                                    <div class="flex items-center justify-between text-[10px] font-bold text-slate-400">
+                                    <div class="flex items-center justify-between text-[10px] font-bold text-slate-600">
                                         <span>{{ acc.name }}</span>
                                         <span class="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-slate-800 border border-slate-700">{{ acc.type === 'mobile_wallet' ? 'mobile wallet' : acc.type }}</span>
                                     </div>
@@ -502,7 +502,7 @@ const toggleFaq = (index) => {
                                 <div class="flex items-center justify-between">
                                     <div>
                                         <h5 class="text-xs font-extrabold text-white">Transfer Simulator</h5>
-                                        <p class="text-[10px] text-slate-400 mt-0.5">Move $300.00 from Bank Savings to bKash Wallet</p>
+                                        <p class="text-[10px] text-slate-600 mt-0.5">Move $300.00 from Bank Savings to bKash Wallet</p>
                                     </div>
                                     <button 
                                         @click="simulateTransfer"
@@ -537,19 +537,19 @@ const toggleFaq = (index) => {
                             <!-- Loan statistics -->
                             <div class="grid grid-cols-3 gap-4">
                                 <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-700">
-                                    <span class="text-[9px] font-bold uppercase tracking-wider text-slate-500">Total Receivable</span>
+                                    <span class="text-[9px] font-bold uppercase tracking-wider text-slate-700">Total Receivable</span>
                                     <p class="text-lg font-extrabold text-emerald-400 mt-1">
                                         ${{ simLoans.reduce((sum, item) => item.type === 'lent' ? sum + item.outstanding : sum, 0) }}
                                     </p>
                                 </div>
                                 <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-700">
-                                    <span class="text-[9px] font-bold uppercase tracking-wider text-slate-500">Total Payable</span>
+                                    <span class="text-[9px] font-bold uppercase tracking-wider text-slate-700">Total Payable</span>
                                     <p class="text-lg font-extrabold text-rose-550 mt-1">
                                         ${{ simLoans.reduce((sum, item) => item.type === 'borrowed' ? sum + item.outstanding : sum, 0) }}
                                     </p>
                                 </div>
                                 <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-700">
-                                    <span class="text-[9px] font-bold uppercase tracking-wider text-slate-500">Overdue Status</span>
+                                    <span class="text-[9px] font-bold uppercase tracking-wider text-slate-700">Overdue Status</span>
                                     <p class="text-lg font-extrabold text-amber-500 mt-1">1 Overdue</p>
                                 </div>
                             </div>
@@ -559,7 +559,7 @@ const toggleFaq = (index) => {
                                 <div class="flex items-center justify-between">
                                     <div>
                                         <h5 class="text-xs font-extrabold text-white">Interactive Repayment Demo</h5>
-                                        <p class="text-[10px] text-slate-400 mt-0.5">Log a $150.00 repayment from debtor "John Doe"</p>
+                                        <p class="text-[10px] text-slate-600 mt-0.5">Log a $150.00 repayment from debtor "John Doe"</p>
                                     </div>
                                     <button 
                                         @click="simulateRepayment"
@@ -574,16 +574,16 @@ const toggleFaq = (index) => {
                                     <div v-for="loan in simLoans" :key="loan.id" class="py-2.5 flex items-center justify-between">
                                         <div>
                                             <span class="font-bold text-slate-300">{{ loan.person }}</span>
-                                            <span class="text-[9px] uppercase font-semibold px-2 py-0.5 ml-2.5 rounded bg-slate-800 text-slate-400 border border-slate-700">
+                                            <span class="text-[9px] uppercase font-semibold px-2 py-0.5 ml-2.5 rounded bg-slate-800 text-slate-600 border border-slate-700">
                                                 {{ loan.type === 'lent' ? 'Lent' : 'Borrowed' }}
                                             </span>
-                                            <p class="text-[10px] text-slate-400 mt-0.5">Due: {{ loan.due }}</p>
+                                            <p class="text-[10px] text-slate-600 mt-0.5">Due: {{ loan.due }}</p>
                                         </div>
                                         <div class="flex items-center gap-3.5">
-                                            <span class="text-slate-400 font-bold">Outstanding: ${{ loan.outstanding }}</span>
+                                            <span class="text-slate-600 font-bold">Outstanding: ${{ loan.outstanding }}</span>
                                             <span 
                                                 class="px-2 py-0.5 rounded text-[10px] font-bold"
-                                                :class="loan.outstanding < loan.amount ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-900/50' : (loan.id === 1 ? 'bg-rose-950/40 text-rose-400 border border-rose-900/50 animate-pulse' : 'bg-slate-800 text-slate-400')"
+                                                :class="loan.outstanding < loan.amount ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-900/50' : (loan.id === 1 ? 'bg-rose-950/40 text-rose-400 border border-rose-900/50 animate-pulse' : 'bg-slate-800 text-slate-600')"
                                             >
                                                 {{ loan.outstanding === 0 ? 'Settled' : (loan.outstanding < loan.amount ? 'Partial' : (loan.id === 1 ? 'Overdue' : 'Active')) }}
                                             </span>
@@ -595,7 +595,7 @@ const toggleFaq = (index) => {
 
                         <!-- TAB 5: Predictive Analytics -->
                         <div v-if="activeTab === 'analytics'" class="space-y-4">
-                            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Simulated 12-Month Projections (Savings rate: 85%)</h4>
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">Simulated 12-Month Projections (Savings rate: 85%)</h4>
                             
                             <!-- Custom SVG Line Graph Mockup -->
                             <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700">
@@ -623,7 +623,7 @@ const toggleFaq = (index) => {
                                     <circle cx="400" cy="15" r="4.5" fill="#34D399" />
                                 </svg>
                                 
-                                <div class="flex items-center justify-between text-[10px] font-bold text-slate-500 mt-2">
+                                <div class="flex items-center justify-between text-[10px] font-bold text-slate-700 mt-2">
                                     <span>Today (Base Balance)</span>
                                     <span>6 Months Forecast (+${{ (simMRR * 6 - 350).toLocaleString() }})</span>
                                     <span>12 Months Target (+${{ (simMRR * 12 - 700).toLocaleString() }})</span>
@@ -632,11 +632,11 @@ const toggleFaq = (index) => {
 
                             <div class="grid grid-cols-2 gap-4">
                                 <div class="bg-slate-800/30 p-3 rounded-lg border border-slate-700">
-                                    <span class="text-[9px] font-bold text-slate-500 uppercase">3-Month Savings Forecast</span>
+                                    <span class="text-[9px] font-bold text-slate-700 uppercase">3-Month Savings Forecast</span>
                                     <p class="text-sm font-black text-white mt-0.5">+${{ (simMRR * 3 - 150).toLocaleString() }}</p>
                                 </div>
                                 <div class="bg-slate-800/30 p-3 rounded-lg border border-slate-700">
-                                    <span class="text-[9px] font-bold text-slate-500 uppercase">12-Month Accumulation</span>
+                                    <span class="text-[9px] font-bold text-slate-700 uppercase">12-Month Accumulation</span>
                                     <p class="text-sm font-black text-emerald-400 mt-0.5">+${{ (simMRR * 12 - 600).toLocaleString() }}</p>
                                 </div>
                             </div>
@@ -669,7 +669,7 @@ const toggleFaq = (index) => {
                     <h2 class="text-3xl font-extrabold text-white tracking-tight">
                         Built for builders, creators, and freelancers.
                     </h2>
-                    <p class="text-sm text-slate-400 leading-relaxed font-semibold">
+                    <p class="text-sm text-slate-600 leading-relaxed font-semibold">
                         A robust, zero-bloat personal ledger backed by Laravel 11. Built specifically to tackle both personal multi-account tracking and client subscription revenues simultaneously.
                     </p>
                 </div>
@@ -684,7 +684,7 @@ const toggleFaq = (index) => {
                             </svg>
                         </div>
                         <h3 class="text-lg font-bold text-white">Multi-Account & Transfers</h3>
-                        <p class="text-xs text-slate-400 leading-relaxed font-medium">
+                        <p class="text-xs text-slate-600 leading-relaxed font-medium">
                             Set up separate accounts for Bank Savings, Cash, or mobile wallets (bKash). Execute instant, double-entry transfers that keep ledger balances synchronized.
                         </p>
                     </div>
@@ -698,7 +698,7 @@ const toggleFaq = (index) => {
                             </svg>
                         </div>
                         <h3 class="text-lg font-bold text-white">Visual Budget Warnings</h3>
-                        <p class="text-xs text-slate-400 leading-relaxed font-medium">
+                        <p class="text-xs text-slate-600 leading-relaxed font-medium">
                             Set monthly limits on expense categories. Progress bars dynamically shift color (green &rarr; orange warning &rarr; red alert) to prevent overspending.
                         </p>
                     </div>
@@ -712,7 +712,7 @@ const toggleFaq = (index) => {
                             </svg>
                         </div>
                         <h3 class="text-lg font-bold text-white">SaaS Client Log & MRR</h3>
-                        <p class="text-xs text-slate-400 leading-relaxed font-medium">
+                        <p class="text-xs text-slate-600 leading-relaxed font-medium">
                             Manage licenses and SaaS client subscriptions. Log payments with one click to auto-increment renewal dates and update the central ledger.
                         </p>
                     </div>
@@ -726,7 +726,7 @@ const toggleFaq = (index) => {
                             </svg>
                         </div>
                         <h3 class="text-lg font-bold text-white">Loans & Debts Tracker</h3>
-                        <p class="text-xs text-slate-400 leading-relaxed font-medium">
+                        <p class="text-xs text-slate-600 leading-relaxed font-medium">
                             Log lent or borrowed funds. Visual warning badges notify you of upcoming and overdue deadlines. Automatically record repayments back into account statements.
                         </p>
                     </div>
@@ -741,7 +741,7 @@ const toggleFaq = (index) => {
                             </svg>
                         </div>
                         <h3 class="text-lg font-bold text-white">Smart Predictions</h3>
-                        <p class="text-xs text-slate-400 leading-relaxed font-medium">
+                        <p class="text-xs text-slate-600 leading-relaxed font-medium">
                             Project your future finances dynamically. Generates 3, 6, and 12-month savings forecasts based on your rolling 3-month averages.
                         </p>
                     </div>
@@ -753,7 +753,7 @@ const toggleFaq = (index) => {
         <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center space-y-12">
             <div class="space-y-4 max-w-2xl mx-auto">
                 <h2 class="text-3xl font-extrabold text-white tracking-tight">Take a Look Inside the Platform</h2>
-                <p class="text-xs text-slate-400 font-semibold leading-relaxed">
+                <p class="text-xs text-slate-600 font-semibold leading-relaxed">
                     Designed from the ground up for maximum visual clarity, readability, and interface delight.
                 </p>
             </div>
@@ -764,7 +764,7 @@ const toggleFaq = (index) => {
                     <div>
                         <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Reports Index</span>
                         <h3 class="text-lg font-extrabold text-white mt-1">Monthly Analytics Breakdown</h3>
-                        <p class="text-xs text-slate-400 mt-1">Get precise details of where your money is flowing using elegant custom SVG charts.</p>
+                        <p class="text-xs text-slate-600 mt-1">Get precise details of where your money is flowing using elegant custom SVG charts.</p>
                     </div>
                     <div class="bg-slate-950/40 p-4 rounded-xl border border-slate-700/70 mt-4 h-44 flex items-end justify-between gap-2">
                         <!-- Bar chart elements -->
@@ -800,11 +800,11 @@ const toggleFaq = (index) => {
                     <div>
                         <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">SaaS Subscriptions</span>
                         <h3 class="text-lg font-extrabold text-white mt-1">Client Payment Audit Trails</h3>
-                        <p class="text-xs text-slate-400 mt-1">Keep track of client payments with a dedicated payment history log in your manager dashboard.</p>
+                        <p class="text-xs text-slate-600 mt-1">Keep track of client payments with a dedicated payment history log in your manager dashboard.</p>
                     </div>
                     
-                    <div class="bg-slate-955/40 p-4 rounded-xl border border-slate-700/70 mt-4 space-y-2.5 h-44 overflow-hidden text-[11px] font-medium text-slate-400">
-                        <div class="flex items-center justify-between border-b border-slate-800/80 pb-2 text-slate-500 font-bold uppercase text-[9px]">
+                    <div class="bg-slate-955/40 p-4 rounded-xl border border-slate-700/70 mt-4 space-y-2.5 h-44 overflow-hidden text-[11px] font-medium text-slate-600">
+                        <div class="flex items-center justify-between border-b border-slate-800/80 pb-2 text-slate-700 font-bold uppercase text-[9px]">
                             <span>Client</span>
                             <span>Billing</span>
                             <span>Status</span>
@@ -832,11 +832,11 @@ const toggleFaq = (index) => {
                     <div>
                         <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Unified cash flow</span>
                         <h3 class="text-lg font-extrabold text-white mt-1">Account Statements</h3>
-                        <p class="text-xs text-slate-400 mt-1">Get an institutional-grade breakdown of cash inflows, outflows, and net flows for all wallets.</p>
+                        <p class="text-xs text-slate-600 mt-1">Get an institutional-grade breakdown of cash inflows, outflows, and net flows for all wallets.</p>
                     </div>
                     
-                    <div class="bg-slate-950/40 p-3 rounded-xl border border-slate-700/70 mt-4 overflow-hidden text-[10px] font-medium text-slate-400 flex flex-col justify-between h-44">
-                        <div class="grid grid-cols-4 border-b border-slate-800/80 pb-1.5 text-slate-500 font-bold uppercase text-[8px] gap-1">
+                    <div class="bg-slate-950/40 p-3 rounded-xl border border-slate-700/70 mt-4 overflow-hidden text-[10px] font-medium text-slate-600 flex flex-col justify-between h-44">
+                        <div class="grid grid-cols-4 border-b border-slate-800/80 pb-1.5 text-slate-700 font-bold uppercase text-[8px] gap-1">
                             <span>Account</span>
                             <span class="text-right">Inflow</span>
                             <span class="text-right">Outflow</span>
@@ -868,11 +868,11 @@ const toggleFaq = (index) => {
                     <div>
                         <span class="text-[10px] font-bold text-amber-400 uppercase tracking-widest">Lending & Debt Audit</span>
                         <h3 class="text-lg font-extrabold text-white mt-1">Outstanding Balances</h3>
-                        <p class="text-xs text-slate-400 mt-1">Easily trace who owes you and who you owe, with precise repayment breakdowns and status indicators.</p>
+                        <p class="text-xs text-slate-600 mt-1">Easily trace who owes you and who you owe, with precise repayment breakdowns and status indicators.</p>
                     </div>
                     
-                    <div class="bg-slate-950/40 p-3.5 rounded-xl border border-slate-700/70 mt-4 space-y-3 h-44 overflow-hidden text-[10px] font-medium text-slate-400">
-                        <div class="flex items-center justify-between border-b border-slate-800/80 pb-2 text-slate-500 font-bold uppercase text-[8px]">
+                    <div class="bg-slate-950/40 p-3.5 rounded-xl border border-slate-700/70 mt-4 space-y-3 h-44 overflow-hidden text-[10px] font-medium text-slate-600">
+                        <div class="flex items-center justify-between border-b border-slate-800/80 pb-2 text-slate-700 font-bold uppercase text-[8px]">
                             <span>Person / Type</span>
                             <span>Repayment Progress</span>
                             <span>Status</span>
@@ -915,7 +915,7 @@ const toggleFaq = (index) => {
                 <div class="text-center space-y-4 max-w-2xl mx-auto">
                     <span class="text-xs font-bold text-indigo-400 uppercase tracking-widest">Pricing Tiers</span>
                     <h2 class="text-3xl font-extrabold text-white tracking-tight">Simple, flexible pricing.</h2>
-                    <p class="text-sm text-slate-400 leading-relaxed font-semibold">
+                    <p class="text-sm text-slate-600 leading-relaxed font-semibold">
                         Deploy open-source on your own hardware or choose our managed cloud for automated features.
                     </p>
                 </div>
@@ -926,14 +926,14 @@ const toggleFaq = (index) => {
                         <div class="space-y-4">
                             <div class="flex items-center justify-between">
                                 <h3 class="text-xl font-bold text-white">Self-Hosted Core</h3>
-                                <span class="px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-bold text-slate-400">Open Source</span>
+                                <span class="px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-bold text-slate-600">Open Source</span>
                             </div>
                             <p class="text-xs text-slate-450 leading-relaxed">
                                 Complete privacy and control. Spin up your own personal instance on any VPS or local machine.
                             </p>
                             <div class="flex items-baseline gap-1 text-white">
                                 <span class="text-4xl font-black">$0</span>
-                                <span class="text-xs font-bold text-slate-500">/ forever</span>
+                                <span class="text-xs font-bold text-slate-700">/ forever</span>
                             </div>
                             
                             <hr class="border-slate-800" />
@@ -987,7 +987,7 @@ const toggleFaq = (index) => {
                             </p>
                             <div class="flex items-baseline gap-1 text-white">
                                 <span class="text-4xl font-black">$9</span>
-                                <span class="text-xs font-bold text-slate-500">/ month</span>
+                                <span class="text-xs font-bold text-slate-700">/ month</span>
                             </div>
                             
                             <hr class="border-slate-800" />
@@ -1056,7 +1056,7 @@ const toggleFaq = (index) => {
                         <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-500 to-emerald-500 flex items-center justify-center font-bold text-[10px] text-white">AK</div>
                         <div>
                             <h4 class="text-xs font-bold text-white">Arvid K.</h4>
-                            <span class="text-[9px] font-bold text-slate-500">Founder, ShipQuick</span>
+                            <span class="text-[9px] font-bold text-slate-700">Founder, ShipQuick</span>
                         </div>
                     </div>
                 </div>
@@ -1070,7 +1070,7 @@ const toggleFaq = (index) => {
                         <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-violet-500 to-rose-500 flex items-center justify-center font-bold text-[10px] text-white">SM</div>
                         <div>
                             <h4 class="text-xs font-bold text-white">Sarah M.</h4>
-                            <span class="text-[9px] font-bold text-slate-500">Freelance UX Designer</span>
+                            <span class="text-[9px] font-bold text-slate-700">Freelance UX Designer</span>
                         </div>
                     </div>
                 </div>
@@ -1084,7 +1084,7 @@ const toggleFaq = (index) => {
                         <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-amber-500 to-indigo-500 flex items-center justify-center font-bold text-[10px] text-white">JN</div>
                         <div>
                             <h4 class="text-xs font-bold text-white">Julian N.</h4>
-                            <span class="text-[9px] font-bold text-slate-500">Co-Founder, SaaSify</span>
+                            <span class="text-[9px] font-bold text-slate-700">Co-Founder, SaaSify</span>
                         </div>
                     </div>
                 </div>
@@ -1116,7 +1116,7 @@ const toggleFaq = (index) => {
                         </button>
                         <div 
                             v-if="faq.open" 
-                            class="px-6 pb-6 text-xs text-slate-400 leading-relaxed font-medium border-t border-slate-800/30 pt-4"
+                            class="px-6 pb-6 text-xs text-slate-600 leading-relaxed font-medium border-t border-slate-800/30 pt-4"
                         >
                             {{ faq.a }}
                         </div>
@@ -1131,7 +1131,7 @@ const toggleFaq = (index) => {
                 <div class="absolute top-0 right-0 w-48 h-48 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none"></div>
                 
                 <h2 class="text-2xl sm:text-3xl font-extrabold text-white">Ready to get your finance flow under control?</h2>
-                <p class="text-sm text-slate-400 max-w-md mx-auto leading-relaxed">
+                <p class="text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
                     Set up your categories, allocate budgets, register client products, and start auditing subscription fees in minutes.
                 </p>
                 <div class="pt-4 flex flex-col sm:flex-row justify-center gap-3">
@@ -1160,10 +1160,10 @@ const toggleFaq = (index) => {
         </section>
 
         <!-- Footer -->
-        <footer class="border-t border-slate-800/80 bg-slate-950/20 py-10 text-center text-xs text-slate-500 font-medium">
+        <footer class="border-t border-slate-800/80 bg-slate-950/20 py-10 text-center text-xs text-slate-700 font-medium">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
                 <div class="flex items-center justify-center gap-2">
-                    <span class="font-bold text-slate-400">FinFlow</span>
+                    <span class="font-bold text-slate-600">FinFlow</span>
                     <span>&copy; 2026. All rights reserved.</span>
                 </div>
                 <div class="flex items-center justify-center gap-4 text-[10px] text-slate-600">

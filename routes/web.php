@@ -23,6 +23,19 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    // FCM & Push Notifications
+    Route::post('/fcm-token', [ProfileController::class, 'updateFcmToken'])->name('profile.fcm-token');
+    Route::get('/firebase-config', function () {
+        return response()->json([
+            'apiKey' => config('services.firebase.api_key'),
+            'authDomain' => config('services.firebase.auth_domain'),
+            'projectId' => config('services.firebase.project_id'),
+            'storageBucket' => config('services.firebase.storage_bucket'),
+            'messagingSenderId' => config('services.firebase.messaging_sender_id'),
+            'appId' => config('services.firebase.app_id'),
+        ]);
+    })->name('firebase.config');
+
     // Categories
     Route::post('/categories', [App\Http\Controllers\CategoryController::class, 'store'])->name('categories.store');
     Route::patch('/categories/{category}', [App\Http\Controllers\CategoryController::class, 'update'])->name('categories.update');
@@ -54,6 +67,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/clients', [App\Http\Controllers\LicenseController::class, 'storeClient'])->name('clients.store');
     Route::post('/licenses', [App\Http\Controllers\LicenseController::class, 'storeLicense'])->name('licenses.store');
     Route::post('/licenses/{license}/pay', [App\Http\Controllers\LicenseController::class, 'logPayment'])->name('licenses.pay');
+    Route::patch('/licenses/{license}', [App\Http\Controllers\LicenseController::class, 'updateLicense'])->name('licenses.update');
     Route::delete('/clients/{client}', [App\Http\Controllers\LicenseController::class, 'destroyClient'])->name('clients.destroy');
     Route::delete('/licenses/{license}', [App\Http\Controllers\LicenseController::class, 'destroyLicense'])->name('licenses.destroy');
 
@@ -62,6 +76,15 @@ Route::middleware('auth')->group(function () {
     Route::post('/loans', [App\Http\Controllers\LoanController::class, 'store'])->name('loans.store');
     Route::post('/loans/{loan}/repayment', [App\Http\Controllers\LoanController::class, 'logRepayment'])->name('loans.repayment');
     Route::delete('/loans/{loan}', [App\Http\Controllers\LoanController::class, 'destroy'])->name('loans.destroy');
+
+    // Recurring Schedules
+    Route::get('/recurring', [App\Http\Controllers\RecurringScheduleController::class, 'index'])->name('recurring.index');
+    Route::post('/recurring', [App\Http\Controllers\RecurringScheduleController::class, 'store'])->name('recurring.store');
+    Route::patch('/recurring/{recurringSchedule}', [App\Http\Controllers\RecurringScheduleController::class, 'update'])->name('recurring.update');
+    Route::delete('/recurring/{recurringSchedule}', [App\Http\Controllers\RecurringScheduleController::class, 'destroy'])->name('recurring.destroy');
+    Route::post('/recurring/{recurringSchedule}/process', [App\Http\Controllers\RecurringScheduleController::class, 'process'])->name('recurring.process');
+    Route::post('/recurring/{recurringSchedule}/skip', [App\Http\Controllers\RecurringScheduleController::class, 'skip'])->name('recurring.skip');
+    Route::post('/recurring/{recurringSchedule}/toggle', [App\Http\Controllers\RecurringScheduleController::class, 'toggle'])->name('recurring.toggle');
 });
 
 require __DIR__.'/auth.php';

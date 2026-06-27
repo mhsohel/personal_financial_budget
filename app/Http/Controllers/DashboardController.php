@@ -138,6 +138,41 @@ class DashboardController extends Controller
                 ];
             });
 
+        $reminders = $user->recurringSchedules()
+            ->with(['account', 'category', 'loan'])
+            ->where('is_active', true)
+            ->where('next_due_date', '<=', Carbon::today()->addDays(7))
+            ->orderBy('next_due_date', 'asc')
+            ->get()
+            ->map(function ($schedule) {
+                return [
+                    'id' => $schedule->id,
+                    'type' => $schedule->type,
+                    'frequency' => $schedule->frequency,
+                    'next_due_date' => $schedule->next_due_date->format('Y-m-d'),
+                    'amount' => (float) $schedule->amount,
+                    'description' => $schedule->description,
+                    'account' => $schedule->account ? [
+                        'id' => $schedule->account->id,
+                        'name' => $schedule->account->name,
+                        'color' => $schedule->account->color,
+                    ] : null,
+                    'category' => $schedule->category ? [
+                        'id' => $schedule->category->id,
+                        'name' => $schedule->category->name,
+                        'color' => $schedule->category->color,
+                    ] : null,
+                    'loan' => $schedule->loan ? [
+                        'id' => $schedule->loan->id,
+                        'person_name' => $schedule->loan->person_name,
+                        'type' => $schedule->loan->type,
+                    ] : null,
+                    'loan_type' => $schedule->loan_type,
+                    'person_name' => $schedule->person_name,
+                    'is_overdue' => $schedule->next_due_date->lt(Carbon::today()),
+                ];
+            });
+
         return Inertia::render('Dashboard', [
             'stats' => [
                 'net_balance' => (float) $netBalance,
@@ -148,6 +183,7 @@ class DashboardController extends Controller
             'accounts' => $accountsData,
             'recent_transactions' => $recentTransactions,
             'current_month' => $month,
+            'reminders' => $reminders,
         ]);
     }
 }

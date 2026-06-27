@@ -20,6 +20,7 @@ class Transaction extends Model
         'is_transfer',
         'transfer_transaction_id',
         'loan_id',
+        'recurring_schedule_id',
     ];
 
     protected $casts = [
@@ -61,5 +62,10 @@ class Transaction extends Model
     public function loan(): BelongsTo
     {
         return $this->belongsTo(Loan::class);
+    }
+
+    public function recurringSchedule(): BelongsTo
+    {
+        return $this->belongsTo(RecurringSchedule::class);
     }
 }

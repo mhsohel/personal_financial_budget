@@ -115,7 +115,7 @@ const healthStatus = computed(() => {
             type: 'empty',
             title: 'No Data Collected Yet',
             message: 'Start logging your monthly incomes and expenses on the dashboard to see your custom reports and projections.',
-            colorClass: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-750',
+            colorClass: 'bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-100 border-slate-200 dark:border-slate-750',
             badgeClass: 'bg-slate-200 dark:bg-slate-750 text-slate-800 dark:text-slate-200'
         };
     }
@@ -183,18 +183,18 @@ const totalAccountsSummary = computed(() => {
                 <h2 class="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                     Reports & Predictions
                 </h2>
-                <div class="flex rounded-xl bg-slate-100 dark:bg-slate-800/80 p-1 self-start md:self-center border border-slate-200/55 dark:border-slate-700/60 shadow-sm">
+                <div class="flex rounded-xl bg-slate-100 dark:bg-slate-900/80 p-1 self-start md:self-center border border-slate-200/55 dark:border-slate-800/60 shadow-sm">
                     <Link 
                         :href="route('reports.index')" 
                         class="px-4 py-2 text-xs font-semibold rounded-lg transition-all"
-                        :class="route().current('reports.index') ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'"
+                        :class="route().current('reports.index') ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-white shadow-sm' : 'text-slate-600 dark:text-slate-600 hover:text-slate-800 dark:hover:text-slate-200'"
                     >
                         Financial Trends
                     </Link>
                     <Link 
                         :href="route('reports.forecast')" 
                         class="px-4 py-2 text-xs font-semibold rounded-lg transition-all"
-                        :class="route().current('reports.forecast') ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'"
+                        :class="route().current('reports.forecast') ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-white shadow-sm' : 'text-slate-600 dark:text-slate-600 hover:text-slate-800 dark:hover:text-slate-200'"
                     >
                         Unified 12M Forecast
                     </Link>
@@ -202,11 +202,11 @@ const totalAccountsSummary = computed(() => {
             </div>
         </template>
 
-        <div class="py-8 bg-slate-50 dark:bg-slate-900 min-h-screen text-slate-900 dark:text-slate-100">
+        <div class="py-8 bg-slate-50 dark:bg-slate-950 min-h-screen text-slate-900 dark:text-slate-100">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-8">
                 
                 <!-- Financial Insight Header -->
-                <div class="p-6 rounded-2xl border border-slate-100 dark:border-slate-700/60 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4" :class="healthStatus.colorClass">
+                <div class="p-6 rounded-2xl border border-slate-100 dark:border-slate-800/60 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4" :class="healthStatus.colorClass">
                     <div class="space-y-1">
                         <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider mb-2" :class="healthStatus.badgeClass">
                             {{ healthStatus.type }}
@@ -220,36 +220,36 @@ const totalAccountsSummary = computed(() => {
 
                 <!-- Metrics Grid -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
-                        <p class="text-slate-400 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider">Avg Monthly Income</p>
+                    <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800">
+                        <p class="text-slate-600 dark:text-slate-600 text-xs font-semibold uppercase tracking-wider">Avg Monthly Income</p>
                         <h4 class="text-2xl font-bold mt-1 text-emerald-600 dark:text-emerald-400">
                             {{ formatCurrency(averages.income) }}
                         </h4>
-                        <span class="text-[10px] text-slate-400 dark:text-slate-500 font-medium">Last 3 months average</span>
+                        <span class="text-[10px] text-slate-600 dark:text-slate-700 font-medium">Last 3 months average</span>
                     </div>
 
-                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
-                        <p class="text-slate-400 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider">Avg Monthly Expense</p>
+                    <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800">
+                        <p class="text-slate-600 dark:text-slate-600 text-xs font-semibold uppercase tracking-wider">Avg Monthly Expense</p>
                         <h4 class="text-2xl font-bold mt-1 text-rose-600 dark:text-rose-400">
                             {{ formatCurrency(averages.expense) }}
                         </h4>
-                        <span class="text-[10px] text-slate-400 dark:text-slate-500 font-medium">Last 3 months average</span>
+                        <span class="text-[10px] text-slate-600 dark:text-slate-700 font-medium">Last 3 months average</span>
                     </div>
 
-                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
-                        <p class="text-slate-400 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider">Avg Monthly Savings</p>
+                    <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800">
+                        <p class="text-slate-600 dark:text-slate-600 text-xs font-semibold uppercase tracking-wider">Avg Monthly Savings</p>
                         <h4 class="text-2xl font-bold mt-1" :class="averages.savings >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-405'">
                             {{ averages.savings >= 0 ? '+' : '' }}{{ formatCurrency(averages.savings) }}
                         </h4>
-                        <span class="text-[10px] text-slate-400 dark:text-slate-500 font-medium">Net accumulation</span>
+                        <span class="text-[10px] text-slate-600 dark:text-slate-700 font-medium">Net accumulation</span>
                     </div>
 
-                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
-                        <p class="text-slate-400 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider">Avg Savings Rate</p>
+                    <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800">
+                        <p class="text-slate-600 dark:text-slate-600 text-xs font-semibold uppercase tracking-wider">Avg Savings Rate</p>
                         <h4 class="text-2xl font-bold mt-1" :class="averages.savings_rate >= 0 ? 'text-indigo-650 dark:text-indigo-400' : 'text-rose-600 dark:text-rose-405'">
                             {{ averages.savings_rate }}%
                         </h4>
-                        <span class="text-[10px] text-slate-400 dark:text-slate-500 font-medium">Recommended: 20%+</span>
+                        <span class="text-[10px] text-slate-600 dark:text-slate-700 font-medium">Recommended: 20%+</span>
                     </div>
                 </div>
 
@@ -257,7 +257,7 @@ const totalAccountsSummary = computed(() => {
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     
                     <!-- Projections table -->
-                    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 flex flex-col justify-between">
+                    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 p-6 flex flex-col justify-between">
                         <div>
                             <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-1 flex items-center gap-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -265,16 +265,16 @@ const totalAccountsSummary = computed(() => {
                                 </svg>
                                 Savings Predictions
                             </h3>
-                            <p class="text-xs text-slate-400 dark:text-slate-500 mb-6 font-medium">
+                            <p class="text-xs text-slate-600 dark:text-slate-700 mb-6 font-medium">
                                 Wealth forecast if current monthly savings rate remains constant.
                             </p>
 
                             <div class="space-y-4">
                                 <!-- 3 Months -->
-                                <div class="flex items-center justify-between p-3.5 rounded-xl border border-slate-50 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-850/40">
+                                <div class="flex items-center justify-between p-3.5 rounded-xl border border-slate-50 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40">
                                     <div>
                                         <p class="text-sm font-bold">3 Months Forecast</p>
-                                        <p class="text-[10px] text-slate-400">Quarterly standing</p>
+                                        <p class="text-[10px] text-slate-600">Quarterly standing</p>
                                     </div>
                                     <p class="text-lg font-black" :class="projections.three_months >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-450'">
                                         {{ projections.three_months >= 0 ? '+' : '' }}{{ formatCurrency(projections.three_months) }}
@@ -282,10 +282,10 @@ const totalAccountsSummary = computed(() => {
                                 </div>
 
                                 <!-- 6 Months -->
-                                <div class="flex items-center justify-between p-3.5 rounded-xl border border-slate-50 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-850/40">
+                                <div class="flex items-center justify-between p-3.5 rounded-xl border border-slate-50 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40">
                                     <div>
                                         <p class="text-sm font-bold">6 Months Forecast</p>
-                                        <p class="text-[10px] text-slate-400">Half year projection</p>
+                                        <p class="text-[10px] text-slate-600">Half year projection</p>
                                     </div>
                                     <p class="text-lg font-black" :class="projections.six_months >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-450'">
                                         {{ projections.six_months >= 0 ? '+' : '' }}{{ formatCurrency(projections.six_months) }}
@@ -293,10 +293,10 @@ const totalAccountsSummary = computed(() => {
                                 </div>
 
                                 <!-- 12 Months -->
-                                <div class="flex items-center justify-between p-3.5 rounded-xl border border-slate-50 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-850/40">
+                                <div class="flex items-center justify-between p-3.5 rounded-xl border border-slate-50 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40">
                                     <div>
                                         <p class="text-sm font-bold">12 Months Forecast</p>
-                                        <p class="text-[10px] text-slate-400">Annual net worth increase</p>
+                                        <p class="text-[10px] text-slate-600">Annual net worth increase</p>
                                     </div>
                                     <p class="text-lg font-black" :class="projections.twelve_months >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-450'">
                                         {{ projections.twelve_months >= 0 ? '+' : '' }}{{ formatCurrency(projections.twelve_months) }}
@@ -306,19 +306,19 @@ const totalAccountsSummary = computed(() => {
                         </div>
 
                         <!-- Micro Animation Forecast Indicator -->
-                        <div class="mt-6 p-4 rounded-xl border border-indigo-100 dark:border-slate-700 bg-indigo-50/30 dark:bg-slate-900/50 text-xs">
+                        <div class="mt-6 p-4 rounded-xl border border-indigo-100 dark:border-slate-800 bg-indigo-50/30 dark:bg-slate-950/50 text-xs">
                             <span class="font-bold text-slate-800 dark:text-slate-200">🔍 Insight: </span>
-                            <span class="text-slate-600 dark:text-slate-400 leading-normal" v-if="projections.twelve_months > 0">
+                            <span class="text-slate-600 dark:text-slate-600 leading-normal" v-if="projections.twelve_months > 0">
                                 Saving regularly allows you to capture compound interest. Consider putting your projected annual savings of <span class="font-bold text-emerald-600 dark:text-emerald-400">{{ formatCurrency(projections.twelve_months) }}</span> in a High Yield Savings Account (HYSA).
                             </span>
-                            <span class="text-slate-600 dark:text-slate-400 leading-normal" v-else>
+                            <span class="text-slate-600 dark:text-slate-600 leading-normal" v-else>
                                 A negative annual projection of <span class="font-bold text-rose-600 dark:text-rose-400">{{ formatCurrency(projections.twelve_months) }}</span> means your current expenses are unsustainable. Try reducing discretionary spending first.
                             </span>
                         </div>
                     </div>
 
                     <!-- Trend chart (Last 6 Months) -->
-                    <div class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 flex flex-col justify-between">
+                    <div class="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 p-6 flex flex-col justify-between">
                         <div>
                             <div class="flex items-center justify-between mb-4">
                                 <h3 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -366,7 +366,7 @@ const totalAccountsSummary = computed(() => {
                                             :x="paddingLeft - 8" 
                                             :y="tick.y + 4" 
                                             fill="currentColor" 
-                                            class="text-[10px] font-bold text-right text-slate-400"
+                                            class="text-[10px] font-bold text-right text-slate-600"
                                             text-anchor="end"
                                         >
                                             {{ formatCurrency(tick.value).replace(/\.00$/, '') }}
@@ -412,7 +412,7 @@ const totalAccountsSummary = computed(() => {
                                             :x="pt.savingsX" 
                                             :y="chartHeight - paddingBottom + 16" 
                                             fill="currentColor" 
-                                            class="text-[10px] font-bold text-slate-400"
+                                            class="text-[10px] font-bold text-slate-600"
                                             text-anchor="middle"
                                         >
                                             {{ pt.label }}
@@ -443,32 +443,32 @@ const totalAccountsSummary = computed(() => {
                             </div>
                         </div>
 
-                        <div class="text-[10px] text-slate-400 dark:text-slate-500 italic mt-3 font-semibold text-center">
+                        <div class="text-[10px] text-slate-600 dark:text-slate-700 italic mt-3 font-semibold text-center">
                             Note: Projections & averages are calculated over the last 3 months, while trends visualize a 6-month historical window.
                         </div>
                     </div>
                 </div>
 
                 <!-- Section: Account Flow & Balances Report -->
-                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6">
+                <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 p-6">
                     <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V15a2 2 0 01-2 2z" />
                         </svg>
                         Account Performance & Balances Report
                     </h3>
-                    <p class="text-xs text-slate-400 dark:text-slate-500 mb-6 font-medium">
+                    <p class="text-xs text-slate-600 dark:text-slate-700 mb-6 font-medium">
                         All-time cash inflow, outflow, and net balance statement per account.
                     </p>
 
-                    <div v-if="accounts_report.length === 0" class="py-12 text-center text-slate-400 dark:text-slate-500 italic font-semibold text-sm">
+                    <div v-if="accounts_report.length === 0" class="py-12 text-center text-slate-600 dark:text-slate-700 italic font-semibold text-sm">
                         No accounts registered. Create accounts and log transactions on the dashboard to generate this report.
                     </div>
 
                     <div v-else class="overflow-x-auto">
                         <table class="w-full text-left border-collapse">
                             <thead>
-                                <tr class="border-b border-slate-100 dark:border-slate-700 text-xs font-bold uppercase tracking-wider text-slate-405">
+                                <tr class="border-b border-slate-100 dark:border-slate-800 text-xs font-bold uppercase tracking-wider text-slate-405">
                                     <th class="py-3 px-4">Account</th>
                                     <th class="py-3 px-4">Type</th>
                                     <th class="py-3 px-4 text-right">Initial Balance</th>
@@ -493,7 +493,7 @@ const totalAccountsSummary = computed(() => {
                                             {{ acc.name }}
                                         </div>
                                     </td>
-                                    <td class="py-3.5 px-4 text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">
+                                    <td class="py-3.5 px-4 text-xs font-medium text-slate-700 dark:text-slate-600 uppercase tracking-wider whitespace-nowrap">
                                         {{ acc.type.replace('_', ' ') }}
                                     </td>
                                     <td class="py-3.5 px-4 text-right text-slate-650 dark:text-slate-350 font-bold whitespace-nowrap">
@@ -519,9 +519,9 @@ const totalAccountsSummary = computed(() => {
                                     </td>
                                 </tr>
                                 <!-- Totals row -->
-                                <tr class="bg-slate-50/50 dark:bg-slate-900/30 font-black border-t-2 border-slate-200 dark:border-slate-700">
+                                <tr class="bg-slate-50/50 dark:bg-slate-950/30 font-black border-t-2 border-slate-200 dark:border-slate-800">
                                     <td colspan="2" class="py-4 px-4 text-slate-900 dark:text-white uppercase tracking-wider text-xs">Total Statement</td>
-                                    <td class="py-4 px-4 text-right text-slate-700 dark:text-slate-300">{{ formatCurrency(totalAccountsSummary.initial) }}</td>
+                                    <td class="py-4 px-4 text-right text-slate-700 dark:text-slate-100">{{ formatCurrency(totalAccountsSummary.initial) }}</td>
                                     <td class="py-4 px-4 text-right text-emerald-600 dark:text-emerald-400">+{{ formatCurrency(totalAccountsSummary.inflows) }}</td>
                                     <td class="py-4 px-4 text-right text-rose-600 dark:text-rose-400">-{{ formatCurrency(totalAccountsSummary.outflows) }}</td>
                                     <td 
@@ -545,7 +545,7 @@ const totalAccountsSummary = computed(() => {
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     
                     <!-- Category Breakdown chart segment -->
-                    <div class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6">
+                    <div class="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 p-6">
                         <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.003 9.003 0 1020.945 13H11V3.055z" />
@@ -554,7 +554,7 @@ const totalAccountsSummary = computed(() => {
                             Outflow Breakdown (Last 6 Months)
                         </h3>
 
-                        <div v-if="category_expenses.length === 0" class="py-12 text-center text-slate-400 dark:text-slate-500 italic font-semibold text-sm">
+                        <div v-if="category_expenses.length === 0" class="py-12 text-center text-slate-600 dark:text-slate-700 italic font-semibold text-sm">
                             No expense data logged in categories over the last 6 months.
                         </div>
 
@@ -578,7 +578,7 @@ const totalAccountsSummary = computed(() => {
                                 <div 
                                     v-for="cat in category_expenses" 
                                     :key="'legend-' + cat.id"
-                                    class="p-3.5 rounded-xl border border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-850/30 flex items-center justify-between"
+                                    class="p-3.5 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 flex items-center justify-between"
                                 >
                                     <div class="flex items-center gap-2.5">
                                         <span 
@@ -587,7 +587,7 @@ const totalAccountsSummary = computed(() => {
                                         ></span>
                                         <div>
                                             <p class="font-bold text-sm text-slate-800 dark:text-slate-200">{{ cat.name }}</p>
-                                            <p class="text-[10px] text-slate-400 font-semibold">{{ roundPct(cat.total) }}% of total expense</p>
+                                            <p class="text-[10px] text-slate-600 font-semibold">{{ roundPct(cat.total) }}% of total expense</p>
                                         </div>
                                     </div>
                                     <p class="font-extrabold text-sm text-slate-800 dark:text-slate-100">
@@ -599,7 +599,7 @@ const totalAccountsSummary = computed(() => {
                     </div>
 
                     <!-- Financial Health Alert Tips -->
-                    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 flex flex-col justify-between">
+                    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 p-6 flex flex-col justify-between">
                         <div>
                             <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -608,7 +608,7 @@ const totalAccountsSummary = computed(() => {
                                 Recommended Actions
                             </h3>
 
-                            <ul class="space-y-4 text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
+                            <ul class="space-y-4 text-xs text-slate-600 dark:text-slate-600 leading-relaxed font-medium">
                                 <li class="flex items-start gap-2.5">
                                     <span class="text-indigo-500 mt-0.5">▪</span>
                                     <span>
@@ -630,7 +630,7 @@ const totalAccountsSummary = computed(() => {
                             </ul>
                         </div>
 
-                        <div class="mt-6 border-t border-slate-100 dark:border-slate-700 pt-4 text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider flex items-center justify-between">
+                        <div class="mt-6 border-t border-slate-100 dark:border-slate-800 pt-4 text-[10px] text-slate-600 dark:text-slate-700 font-bold uppercase tracking-wider flex items-center justify-between">
                             <span>Target ratio: 20% savings</span>
                             <span>On Track</span>
                         </div>

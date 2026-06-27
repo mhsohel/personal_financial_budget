@@ -24,6 +24,10 @@ const props = defineProps({
         type: String,
         required: true,
     },
+    reminders: {
+        type: Array,
+        default: () => [],
+    },
 });
 
 // Month Selection
@@ -272,6 +276,19 @@ const incomeCategories = computed(() => {
     return props.categories.filter(c => c.type === 'income');
 });
 
+// Recurring Reminders Actions
+const processReminder = (id) => {
+    if (confirm('Are you sure you want to process this recurring item now? This will record the transaction/loan in the database and advance the next due date.')) {
+        router.post(route('recurring.process', id), {}, { preserveScroll: true });
+    }
+};
+
+const skipReminder = (id) => {
+    if (confirm('Are you sure you want to skip this occurrence? This will advance the next due date without logging any transaction/loan.')) {
+        router.post(route('recurring.skip', id), {}, { preserveScroll: true });
+    }
+};
+
 // Account Actions
 const openAddAccount = () => {
     isEditingAccount.value = false;
@@ -435,10 +452,10 @@ const resetLedgerFilters = () => {
                 </h2>
                 
                 <!-- Month Selector -->
-                <div class="flex items-center gap-2 bg-white dark:bg-slate-800 p-1.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <div class="flex items-center gap-2 bg-white dark:bg-slate-900 p-1.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
                     <button 
                         @click="prevMonth"
-                        class="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors duration-150"
+                        class="p-2 text-slate-600 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors duration-150"
                         title="Previous Month"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -455,7 +472,7 @@ const resetLedgerFilters = () => {
 
                     <button 
                         @click="nextMonth"
-                        class="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors duration-150"
+                        class="p-2 text-slate-600 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors duration-150"
                         title="Next Month"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -466,9 +483,93 @@ const resetLedgerFilters = () => {
             </div>
         </template>
 
-        <div class="py-8 bg-slate-50 dark:bg-slate-900 min-h-screen text-slate-900 dark:text-slate-100">
+        <div class="py-8 bg-slate-50 dark:bg-slate-950 min-h-screen text-slate-900 dark:text-slate-100">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-8">
                 
+                <!-- Recurring Reminders Widget -->
+                <div v-if="reminders && reminders.length > 0" class="bg-white dark:bg-slate-900 rounded-2xl shadow-md border border-amber-100 dark:border-amber-900/30 p-6 relative overflow-hidden">
+                    <div class="absolute top-0 left-0 right-0 h-1 bg-amber-500"></div>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-black text-slate-950 dark:text-white flex items-center gap-2">
+                            <span class="flex h-2.5 w-2.5 relative">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
+                            </span>
+                            Upcoming & Overdue Reminders
+                        </h3>
+                        <span class="text-xs text-amber-800 dark:text-amber-400 font-extrabold bg-amber-50 dark:bg-amber-950/20 px-2.5 py-1 rounded-lg">
+                            {{ reminders.length }} Action Required
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div 
+                            v-for="reminder in reminders" 
+                            :key="reminder.id"
+                            class="flex items-center justify-between p-4 rounded-xl border border-slate-150 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 hover:shadow-sm transition gap-4"
+                        >
+                            <div class="flex items-center gap-3 min-w-0">
+                                <div 
+                                    class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 shadow-sm"
+                                    :class="[
+                                        reminder.type === 'expense' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400' : '',
+                                        reminder.type === 'loan_installment' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' : '',
+                                        reminder.type === 'loan' ? 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' : '',
+                                    ]"
+                                >
+                                    <svg v-if="reminder.type === 'expense'" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                                    </svg>
+                                    <svg v-else-if="reminder.type === 'loan_installment'" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                    </svg>
+                                    <svg v-else-if="reminder.type === 'loan'" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        <span class="font-extrabold text-slate-900 dark:text-white text-sm">
+                                            {{ formatCurrency(reminder.amount) }}
+                                        </span>
+                                        <span 
+                                            class="text-[9px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded-full"
+                                            :class="reminder.is_overdue ? 'bg-red-100 dark:bg-red-950/40 text-red-650 dark:text-red-400' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-100'"
+                                        >
+                                            {{ reminder.is_overdue ? 'Overdue' : 'Due ' + reminder.next_due_date }}
+                                        </span>
+                                    </div>
+                                    <p class="text-xs text-slate-700 dark:text-slate-100 truncate">
+                                        <span v-if="reminder.type === 'expense'">
+                                            Expense &bull; {{ reminder.category?.name || 'Uncategorized' }}
+                                        </span>
+                                        <span v-else-if="reminder.type === 'loan_installment'">
+                                            Repayment: {{ reminder.loan?.person_name }}
+                                        </span>
+                                        <span v-else-if="reminder.type === 'loan'">
+                                            {{ reminder.loan_type === 'lent' ? 'Lend to' : 'Borrow from' }}: {{ reminder.person_name }}
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 shrink-0">
+                                <button 
+                                    @click="processReminder(reminder.id)"
+                                    class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow-sm transition"
+                                >
+                                    Pay
+                                </button>
+                                <button 
+                                    @click="skipReminder(reminder.id)"
+                                    class="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-650 text-slate-800 dark:text-slate-200 text-xs font-bold rounded-lg shadow-sm transition"
+                                >
+                                    Skip
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- KPI Section -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <!-- Net Balance Card -->
@@ -497,37 +598,37 @@ const resetLedgerFilters = () => {
                     </div>
 
                     <!-- Monthly Income Card -->
-                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-md border border-slate-100 dark:border-slate-700 flex flex-col justify-between relative overflow-hidden">
+                    <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-md border border-slate-100 dark:border-slate-800 flex flex-col justify-between relative overflow-hidden">
                         <div class="absolute -right-6 -bottom-6 opacity-5 text-emerald-500">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-32 w-32" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                             </svg>
                         </div>
                         <div>
-                            <p class="text-slate-400 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider">Monthly Income</p>
+                            <p class="text-slate-600 dark:text-slate-600 text-xs font-semibold uppercase tracking-wider">Monthly Income</p>
                             <h3 class="text-3xl font-bold mt-1 text-emerald-600 dark:text-emerald-400 tracking-tight">
                                 {{ formatCurrency(stats.monthly_income) }}
                             </h3>
                         </div>
-                        <div class="mt-4 text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                        <div class="mt-4 text-xs text-slate-700 dark:text-slate-600 flex items-center gap-1">
                             <span class="text-emerald-500 font-semibold">Total Inflows</span> this month
                         </div>
                     </div>
 
                     <!-- Monthly Expenses Card -->
-                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-md border border-slate-100 dark:border-slate-700 flex flex-col justify-between relative overflow-hidden">
+                    <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-md border border-slate-100 dark:border-slate-800 flex flex-col justify-between relative overflow-hidden">
                         <div class="absolute -right-6 -bottom-6 opacity-5 text-rose-500">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-32 w-32" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6" />
                             </svg>
                         </div>
                         <div>
-                            <p class="text-slate-400 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider">Monthly Expenses</p>
+                            <p class="text-slate-600 dark:text-slate-600 text-xs font-semibold uppercase tracking-wider">Monthly Expenses</p>
                             <h3 class="text-3xl font-bold mt-1 text-rose-600 dark:text-rose-400 tracking-tight">
                                 {{ formatCurrency(stats.monthly_expenses) }}
                             </h3>
                         </div>
-                        <div class="mt-4 text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                        <div class="mt-4 text-xs text-slate-700 dark:text-slate-600 flex items-center gap-1">
                             <span class="text-rose-500 font-semibold">Total Outflows</span> this month
                         </div>
                     </div>
@@ -538,7 +639,7 @@ const resetLedgerFilters = () => {
                     
                     <!-- Budgets & Categories Column -->
                     <div class="lg:col-span-2 space-y-8">
-                        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-slate-100 dark:border-slate-700 p-6">
+                        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-md border border-slate-100 dark:border-slate-800 p-6">
                             <div class="flex items-center justify-between mb-6">
                                 <h3 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -560,20 +661,20 @@ const resetLedgerFilters = () => {
                             </div>
 
                             <div v-if="expenseCategories.length === 0" class="py-12 text-center">
-                                <div class="bg-indigo-50 dark:bg-slate-900 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <div class="bg-indigo-50 dark:bg-slate-950 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                                     </svg>
                                 </div>
-                                <p class="text-slate-500 dark:text-slate-400 font-medium">No expense categories registered yet.</p>
-                                <p class="text-slate-400 dark:text-slate-500 text-xs mt-1">Create an expense category and set budget limits to track them.</p>
+                                <p class="text-slate-700 dark:text-slate-600 font-medium">No expense categories registered yet.</p>
+                                <p class="text-slate-600 dark:text-slate-700 text-xs mt-1">Create an expense category and set budget limits to track them.</p>
                             </div>
 
                             <div v-else class="space-y-6">
                                 <div 
                                     v-for="cat in expenseCategories" 
                                     :key="cat.id"
-                                    class="p-4 rounded-xl border border-slate-100 dark:border-slate-700/60 bg-slate-50/50 dark:bg-slate-850/40 hover:shadow-sm transition-shadow duration-150"
+                                    class="p-4 rounded-xl border border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-900/40 hover:shadow-sm transition-shadow duration-150"
                                 >
                                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
                                         <div class="flex items-center gap-2.5">
@@ -586,7 +687,7 @@ const resetLedgerFilters = () => {
                                             <!-- Filter Ledger Button -->
                                             <button 
                                                 @click="filterByCategory(cat.id)"
-                                                class="px-2 py-0.5 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 text-slate-450 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-md transition-colors text-[10px] font-bold border border-slate-200/40 dark:border-slate-700/60"
+                                                class="px-2 py-0.5 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 text-slate-450 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-md transition-colors text-[10px] font-bold border border-slate-200/40 dark:border-slate-800/60"
                                                 title="Filter ledger by this category"
                                             >
                                                 Filter Ledger
@@ -607,11 +708,11 @@ const resetLedgerFilters = () => {
                                         <!-- Budget Numbers & Actions -->
                                         <div class="flex items-center gap-3">
                                             <div class="text-right text-xs">
-                                                <span class="font-bold text-slate-700 dark:text-slate-300">{{ formatCurrency(cat.spent) }}</span>
-                                                <span class="text-slate-400 font-medium"> of </span>
+                                                <span class="font-bold text-slate-700 dark:text-slate-100">{{ formatCurrency(cat.spent) }}</span>
+                                                <span class="text-slate-600 font-medium"> of </span>
                                                 <span 
                                                     @click="openBudgetModal(cat)"
-                                                    class="font-bold text-slate-500 dark:text-slate-400 hover:text-indigo-500 cursor-pointer underline decoration-dotted"
+                                                    class="font-bold text-slate-700 dark:text-slate-600 hover:text-indigo-500 cursor-pointer underline decoration-dotted"
                                                     title="Click to change budget"
                                                     :id="'budget-limit-' + cat.id"
                                                 >
@@ -620,7 +721,7 @@ const resetLedgerFilters = () => {
                                             </div>
                                             <button 
                                                 @click="openBudgetModal(cat)"
-                                                class="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-700 dark:hover:text-slate-350 rounded-lg transition-colors"
+                                                class="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 hover:text-slate-700 dark:hover:text-slate-350 rounded-lg transition-colors"
                                                 title="Edit Limit"
                                                 :id="'edit-budget-btn-' + cat.id"
                                             >
@@ -645,12 +746,12 @@ const resetLedgerFilters = () => {
                                                 :id="'progress-bar-' + cat.id"
                                             ></div>
                                         </div>
-                                        <div class="flex justify-between text-[10px] font-bold uppercase tracking-wider text-slate-400 px-1">
+                                        <div class="flex justify-between text-[10px] font-bold uppercase tracking-wider text-slate-600 px-1">
                                             <span>{{ cat.percentage_used }}% Used</span>
                                             <span>{{ formatCurrency(Math.max(0, cat.budget_limit - cat.spent)) }} Remaining</span>
                                         </div>
                                     </div>
-                                    <div v-else class="text-xs text-slate-400 dark:text-slate-500 italic mt-1 font-medium">
+                                    <div v-else class="text-xs text-slate-600 dark:text-slate-700 italic mt-1 font-medium">
                                         No budget limit configured. Spent: {{ formatCurrency(cat.spent) }}
                                     </div>
                                 </div>
@@ -658,7 +759,7 @@ const resetLedgerFilters = () => {
                         </div>
 
                         <!-- Recent Transactions Ledger Section -->
-                        <div id="transaction-ledger-section" class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-slate-100 dark:border-slate-700 p-6">
+                        <div id="transaction-ledger-section" class="bg-white dark:bg-slate-900 rounded-2xl shadow-md border border-slate-100 dark:border-slate-800 p-6">
                             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                                 <h3 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -682,15 +783,15 @@ const resetLedgerFilters = () => {
                             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 mb-4">
                                 <!-- Search Input -->
                                 <div>
-                                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-405 dark:text-slate-400 mb-1.5">Search</label>
+                                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-405 dark:text-slate-600 mb-1.5">Search</label>
                                     <div class="relative">
                                         <input 
                                             type="text" 
                                             v-model="searchQuery"
                                             placeholder="Search description..."
-                                            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl pl-9 pr-4 py-2 text-xs text-slate-805 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                            class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-9 pr-4 py-2 text-xs text-slate-805 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                         />
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400 absolute left-3 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-600 absolute left-3 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                         </svg>
                                     </div>
@@ -698,10 +799,10 @@ const resetLedgerFilters = () => {
                                 
                                 <!-- Category Filter -->
                                 <div>
-                                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-405 dark:text-slate-400 mb-1.5">Category wise Ledger</label>
+                                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-405 dark:text-slate-600 mb-1.5">Category wise Ledger</label>
                                     <select 
                                         v-model="selectedCategoryFilter"
-                                        class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-805 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-805 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                     >
                                         <option value="">All Categories</option>
                                         <option value="uncategorized">Uncategorized</option>
@@ -713,10 +814,10 @@ const resetLedgerFilters = () => {
 
                                 <!-- Account Filter -->
                                 <div>
-                                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-405 dark:text-slate-400 mb-1.5">Account wise Ledger</label>
+                                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-405 dark:text-slate-600 mb-1.5">Account wise Ledger</label>
                                     <select 
                                         v-model="selectedAccountFilter"
-                                        class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-805 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-805 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                     >
                                         <option value="">All Accounts</option>
                                         <option value="unallocated">Unallocated / No Account</option>
@@ -728,10 +829,10 @@ const resetLedgerFilters = () => {
 
                                 <!-- Transaction Type Filter -->
                                 <div>
-                                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-405 dark:text-slate-400 mb-1.5">Type</label>
+                                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-405 dark:text-slate-600 mb-1.5">Type</label>
                                     <select 
                                         v-model="selectedTypeFilter"
-                                        class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-850 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-850 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                     >
                                         <option value="">All Types</option>
                                         <option value="income">Income</option>
@@ -741,27 +842,27 @@ const resetLedgerFilters = () => {
 
                                 <!-- Start Date Filter -->
                                 <div>
-                                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-405 dark:text-slate-400 mb-1.5">Start Date</label>
+                                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-405 dark:text-slate-600 mb-1.5">Start Date</label>
                                     <input 
                                         type="date" 
                                         v-model="startDateFilter"
-                                        class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-805 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-805 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                     />
                                 </div>
 
                                 <!-- End Date Filter -->
                                 <div>
-                                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-405 dark:text-slate-400 mb-1.5">End Date</label>
+                                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-405 dark:text-slate-600 mb-1.5">End Date</label>
                                     <input 
                                         type="date" 
                                         v-model="endDateFilter"
-                                        class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-805 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-805 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                     />
                                 </div>
                             </div>
 
                             <!-- Reset/Clear Button Row -->
-                            <div v-if="selectedCategoryFilter || selectedTypeFilter || searchQuery || startDateFilter || endDateFilter || selectedAccountFilter" class="flex justify-end mb-6 pb-4 border-b border-slate-100 dark:border-slate-700/80">
+                            <div v-if="selectedCategoryFilter || selectedTypeFilter || searchQuery || startDateFilter || endDateFilter || selectedAccountFilter" class="flex justify-end mb-6 pb-4 border-b border-slate-100 dark:border-slate-800/80">
                                 <button 
                                     @click="resetLedgerFilters"
                                     class="px-4 py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-650 text-slate-800 dark:text-slate-200 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-600 transition flex items-center gap-1"
@@ -772,10 +873,10 @@ const resetLedgerFilters = () => {
                                     Clear All Filters
                                 </button>
                             </div>
-                            <div v-else class="mb-6 pb-4 border-b border-slate-100 dark:border-slate-700/80"></div>
+                            <div v-else class="mb-6 pb-4 border-b border-slate-100 dark:border-slate-800/80"></div>
 
                             <!-- Filtered Ledger Totals Summary -->
-                            <div v-if="recent_transactions.length > 0" class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 mb-6 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-150 dark:border-slate-800">
+                            <div v-if="recent_transactions.length > 0" class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 mb-6 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-slate-800">
                                 <div class="space-y-0.5">
                                     <span class="text-[9px] font-bold uppercase tracking-wider text-slate-405">Filtered Count</span>
                                     <p class="text-sm font-black text-slate-800 dark:text-slate-200">{{ filteredLedgerStats.count }} transactions</p>
@@ -800,22 +901,22 @@ const resetLedgerFilters = () => {
                             </div>
 
                             <div v-if="recent_transactions.length === 0" class="py-12 text-center">
-                                <div class="bg-indigo-50 dark:bg-slate-900 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <div class="bg-indigo-50 dark:bg-slate-950 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                 </div>
-                                <p class="text-slate-500 dark:text-slate-400 font-medium">No transactions recorded yet.</p>
-                                <p class="text-slate-400 dark:text-slate-500 text-xs mt-1">Press "Add Transaction" to log your first income or expense.</p>
+                                <p class="text-slate-700 dark:text-slate-600 font-medium">No transactions recorded yet.</p>
+                                <p class="text-slate-600 dark:text-slate-700 text-xs mt-1">Press "Add Transaction" to log your first income or expense.</p>
                             </div>
 
                             <div v-else-if="filteredTransactions.length === 0" class="py-12 text-center">
-                                <div class="bg-indigo-50/50 dark:bg-slate-900 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <div class="bg-indigo-50/50 dark:bg-slate-950 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                     </svg>
                                 </div>
-                                <p class="text-slate-500 dark:text-slate-400 font-bold text-sm">No transactions match your filters.</p>
+                                <p class="text-slate-700 dark:text-slate-600 font-bold text-sm">No transactions match your filters.</p>
                                 <button 
                                     @click="resetLedgerFilters" 
                                     class="mt-2 text-xs font-bold text-indigo-650 dark:text-indigo-400 hover:underline"
@@ -827,7 +928,7 @@ const resetLedgerFilters = () => {
                             <div v-else class="overflow-x-auto">
                                 <table class="w-full text-left border-collapse">
                                     <thead>
-                                        <tr class="border-b border-slate-100 dark:border-slate-700 text-xs font-bold uppercase tracking-wider text-slate-400">
+                                        <tr class="border-b border-slate-100 dark:border-slate-800 text-xs font-bold uppercase tracking-wider text-slate-600">
                                             <th class="py-3 px-4">Date</th>
                                             <th class="py-3 px-4">Description</th>
                                             <th class="py-3 px-4">Category</th>
@@ -842,7 +943,7 @@ const resetLedgerFilters = () => {
                                             :key="tx.id"
                                             class="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors"
                                         >
-                                            <td class="py-3.5 px-4 font-semibold text-slate-500 dark:text-slate-400 text-xs whitespace-nowrap">
+                                            <td class="py-3.5 px-4 font-semibold text-slate-700 dark:text-slate-600 text-xs whitespace-nowrap">
                                                 {{ tx.transaction_date }}
                                             </td>
                                             <td class="py-3.5 px-4 font-bold text-slate-850 dark:text-slate-100">
@@ -864,7 +965,7 @@ const resetLedgerFilters = () => {
                                                     ></span>
                                                     {{ tx.category.name }}
                                                 </span>
-                                                <span v-else class="text-slate-400 text-xs italic font-medium">Uncategorized</span>
+                                                <span v-else class="text-slate-600 text-xs italic font-medium">Uncategorized</span>
                                             </td>
                                             <td class="py-3.5 px-4 whitespace-nowrap">
                                                 <span 
@@ -882,7 +983,7 @@ const resetLedgerFilters = () => {
                                                     ></span>
                                                     {{ tx.account.name }}
                                                 </span>
-                                                <span v-else class="text-slate-400 text-xs italic font-medium">Unallocated</span>
+                                                <span v-else class="text-slate-600 text-xs italic font-medium">Unallocated</span>
                                             </td>
                                             <td 
                                                 class="py-3.5 px-4 text-right font-extrabold whitespace-nowrap"
@@ -894,7 +995,7 @@ const resetLedgerFilters = () => {
                                                 <div class="flex items-center justify-center gap-2">
                                                     <button 
                                                         @click="openEditTransaction(tx)"
-                                                        class="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg transition-colors"
+                                                        class="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg transition-colors"
                                                         title="Edit"
                                                     >
                                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -903,7 +1004,7 @@ const resetLedgerFilters = () => {
                                                     </button>
                                                     <button 
                                                         @click="deleteTransaction(tx.id)"
-                                                        class="p-1 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-slate-400 hover:text-rose-600 dark:hover:text-rose-450 rounded-lg transition-colors"
+                                                        class="p-1 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-slate-600 hover:text-rose-600 dark:hover:text-rose-450 rounded-lg transition-colors"
                                                         title="Delete"
                                                     >
                                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -918,7 +1019,7 @@ const resetLedgerFilters = () => {
                             </div>
 
                             <!-- Pagination Controls -->
-                            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 pt-4 border-t border-slate-100 dark:border-slate-700/80 text-xs text-slate-500">
+                            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 pt-4 border-t border-slate-100 dark:border-slate-800/80 text-xs text-slate-700">
                                 <div class="flex items-center gap-4">
                                     <span>
                                         Showing 
@@ -938,7 +1039,7 @@ const resetLedgerFilters = () => {
                                         <span>Per Page:</span>
                                         <select 
                                             v-model="perPage" 
-                                            class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg py-1 px-2.5 text-[11px] font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+                                            class="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg py-1 px-2.5 text-[11px] font-bold text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
                                         >
                                             <option :value="5">5</option>
                                             <option :value="10">10</option>
@@ -953,7 +1054,7 @@ const resetLedgerFilters = () => {
                                     <button 
                                         @click="currentPage--" 
                                         :disabled="currentPage === 1"
-                                        class="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750 disabled:opacity-40 disabled:hover:bg-transparent font-semibold transition"
+                                        class="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 disabled:opacity-40 disabled:hover:bg-transparent font-semibold transition"
                                         title="Previous Page"
                                     >
                                         Prev
@@ -967,7 +1068,7 @@ const resetLedgerFilters = () => {
                                         class="w-8 h-8 rounded-lg font-bold border transition"
                                         :class="currentPage === page 
                                             ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm' 
-                                            : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300'"
+                                            : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-100'"
                                     >
                                         {{ page }}
                                     </button>
@@ -976,7 +1077,7 @@ const resetLedgerFilters = () => {
                                     <button 
                                         @click="currentPage++" 
                                         :disabled="currentPage === totalPages"
-                                        class="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750 disabled:opacity-40 disabled:hover:bg-transparent font-semibold transition"
+                                        class="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 disabled:opacity-40 disabled:hover:bg-transparent font-semibold transition"
                                         title="Next Page"
                                     >
                                         Next
@@ -990,7 +1091,7 @@ const resetLedgerFilters = () => {
                     <!-- Categories sidebar panel -->
                     <div class="space-y-8">
                         <!-- Accounts Sidebar Card -->
-                        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-slate-100 dark:border-slate-700 p-6">
+                        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-md border border-slate-100 dark:border-slate-800 p-6">
                             <div class="flex items-center justify-between mb-4">
                                 <h3 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1009,7 +1110,7 @@ const resetLedgerFilters = () => {
                                 </button>
                             </div>
 
-                            <div v-if="accounts.length === 0" class="py-6 text-center text-slate-400 dark:text-slate-500 italic text-xs font-semibold">
+                            <div v-if="accounts.length === 0" class="py-6 text-center text-slate-600 dark:text-slate-700 italic text-xs font-semibold">
                                 No accounts registered. Click "Add" above to create one.
                             </div>
 
@@ -1017,7 +1118,7 @@ const resetLedgerFilters = () => {
                                 <div 
                                     v-for="acc in accounts" 
                                     :key="acc.id"
-                                    class="flex items-center justify-between p-3 rounded-xl border border-slate-50 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-850/20 hover:shadow-sm transition-shadow"
+                                    class="flex items-center justify-between p-3 rounded-xl border border-slate-50 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/20 hover:shadow-sm transition-shadow"
                                 >
                                     <div class="flex items-center gap-3 min-w-0">
                                         <span 
@@ -1038,7 +1139,7 @@ const resetLedgerFilters = () => {
                                             >
                                                 {{ acc.name }}
                                             </p>
-                                            <p class="text-[10px] font-medium text-slate-450 dark:text-slate-400 uppercase tracking-wider">
+                                            <p class="text-[10px] font-medium text-slate-450 dark:text-slate-600 uppercase tracking-wider">
                                                 {{ acc.type.replace('_', ' ') }}
                                             </p>
                                         </div>
@@ -1055,7 +1156,7 @@ const resetLedgerFilters = () => {
                                         <div class="flex gap-0.5">
                                             <button 
                                                 @click="openEditAccount(acc)"
-                                                class="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-650 dark:hover:text-slate-350 rounded-lg transition-colors"
+                                                class="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 hover:text-slate-650 dark:hover:text-slate-350 rounded-lg transition-colors"
                                                 title="Edit Account"
                                             >
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1064,7 +1165,7 @@ const resetLedgerFilters = () => {
                                             </button>
                                             <button 
                                                 @click="deleteAccount(acc.id)"
-                                                class="p-1 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-slate-400 hover:text-rose-650 dark:hover:text-rose-400 rounded-lg transition-colors"
+                                                class="p-1 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-slate-600 hover:text-rose-650 dark:hover:text-rose-400 rounded-lg transition-colors"
                                                 title="Delete Account"
                                             >
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1078,7 +1179,7 @@ const resetLedgerFilters = () => {
                         </div>
 
                         <!-- Categories List Card -->
-                        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-slate-100 dark:border-slate-700 p-6">
+                        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-md border border-slate-100 dark:border-slate-800 p-6">
                             <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
@@ -1086,7 +1187,7 @@ const resetLedgerFilters = () => {
                                 Categories List
                             </h3>
 
-                            <div v-if="categories.length === 0" class="py-6 text-center text-slate-400 dark:text-slate-500 italic text-xs font-semibold">
+                            <div v-if="categories.length === 0" class="py-6 text-center text-slate-600 dark:text-slate-700 italic text-xs font-semibold">
                                 No categories. Click "Add Category" above to create one.
                             </div>
 
@@ -1094,7 +1195,7 @@ const resetLedgerFilters = () => {
                                 <div 
                                     v-for="cat in categories" 
                                     :key="cat.id"
-                                    class="flex items-center justify-between p-2.5 rounded-xl border border-slate-50 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-850/20"
+                                    class="flex items-center justify-between p-2.5 rounded-xl border border-slate-50 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/20"
                                 >
                                     <div class="flex items-center gap-2">
                                         <span 
@@ -1117,7 +1218,7 @@ const resetLedgerFilters = () => {
                                     </div>
                                     <button 
                                         @click="deleteCategory(cat.id)"
-                                        class="p-1 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg transition-colors"
+                                        class="p-1 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-slate-600 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg transition-colors"
                                         title="Delete Category"
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1136,15 +1237,15 @@ const resetLedgerFilters = () => {
         <!-- TRANSACTION MODAL -->
         <div v-if="showTransactionModal" class="fixed inset-0 z-50 flex items-center justify-center overflow-x-hidden overflow-y-auto outline-none focus:outline-none bg-slate-900/60 backdrop-blur-sm">
             <div class="relative w-full max-w-lg mx-auto my-6 px-4">
-                <div class="relative flex flex-col w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl outline-none focus:outline-none">
+                <div class="relative flex flex-col w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl outline-none focus:outline-none">
                     <!-- Modal Header -->
-                    <div class="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-700 rounded-t">
+                    <div class="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800 rounded-t">
                         <h3 class="text-xl font-extrabold text-slate-900 dark:text-white">
                             {{ isEditingTransaction ? 'Modify Transaction' : 'Log New Transaction' }}
                         </h3>
                         <button 
                             @click="showTransactionModal = false"
-                            class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                            class="p-1 text-slate-600 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
                             id="close-transaction-modal-btn"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1158,7 +1259,7 @@ const resetLedgerFilters = () => {
                         <div class="p-6 space-y-4">
                             <!-- Type -->
                             <div>
-                                <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Transaction Type</label>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">Transaction Type</label>
                                 <div class="grid grid-cols-3 gap-3">
                                     <button 
                                         type="button"
@@ -1166,7 +1267,7 @@ const resetLedgerFilters = () => {
                                         class="py-2.5 rounded-xl text-sm font-bold border transition duration-150"
                                         :class="transactionForm.type === 'expense' 
                                             ? 'bg-rose-50 border-rose-500 text-rose-700 dark:bg-rose-950/30 dark:border-rose-500 dark:text-rose-400' 
-                                            : 'bg-white border-slate-200 dark:bg-slate-800 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-750'"
+                                            : 'bg-white border-slate-200 dark:bg-slate-900 dark:border-slate-800 text-slate-600 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-750'"
                                         id="type-expense-btn"
                                     >
                                         Expense
@@ -1177,7 +1278,7 @@ const resetLedgerFilters = () => {
                                         class="py-2.5 rounded-xl text-sm font-bold border transition duration-150"
                                         :class="transactionForm.type === 'income' 
                                             ? 'bg-emerald-50 border-emerald-500 text-emerald-700 dark:bg-emerald-950/30 dark:border-emerald-500 dark:text-emerald-400' 
-                                            : 'bg-white border-slate-200 dark:bg-slate-800 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-750'"
+                                            : 'bg-white border-slate-200 dark:bg-slate-900 dark:border-slate-800 text-slate-600 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-750'"
                                         id="type-income-btn"
                                     >
                                         Income
@@ -1188,7 +1289,7 @@ const resetLedgerFilters = () => {
                                         class="py-2.5 rounded-xl text-sm font-bold border transition duration-150"
                                         :class="transactionForm.type === 'transfer' 
                                             ? 'bg-indigo-50 border-indigo-500 text-indigo-700 dark:bg-indigo-950/30 dark:border-indigo-500 dark:text-indigo-400' 
-                                            : 'bg-white border-slate-200 dark:bg-slate-800 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-750'"
+                                            : 'bg-white border-slate-200 dark:bg-slate-900 dark:border-slate-800 text-slate-600 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-750'"
                                         id="type-transfer-btn"
                                     >
                                         Transfer
@@ -1198,13 +1299,13 @@ const resetLedgerFilters = () => {
 
                             <!-- Amount -->
                             <div>
-                                <label for="tx-amount" class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Amount ($)</label>
+                                <label for="tx-amount" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Amount ($)</label>
                                 <input 
                                     type="number" 
                                     step="0.01" 
                                     id="tx-amount" 
                                     v-model="transactionForm.amount"
-                                    class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                    class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                                     placeholder="0.00"
                                     required
                                 />
@@ -1213,11 +1314,11 @@ const resetLedgerFilters = () => {
 
                             <!-- Category -->
                             <div v-if="transactionForm.type !== 'transfer'">
-                                <label for="tx-category" class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Category</label>
+                                <label for="tx-category" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Category</label>
                                 <select 
                                     id="tx-category" 
                                     v-model="transactionForm.category_id"
-                                    class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                    class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                                 >
                                     <option value="">Uncategorized</option>
                                     <option 
@@ -1233,11 +1334,11 @@ const resetLedgerFilters = () => {
 
                             <!-- Account (for standard transactions) -->
                             <div v-if="transactionForm.type !== 'transfer'">
-                                <label for="tx-account" class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Account</label>
+                                <label for="tx-account" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Account</label>
                                 <select 
                                     id="tx-account" 
                                     v-model="transactionForm.account_id"
-                                    class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                    class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                                 >
                                     <option value="">No Account / Unallocated</option>
                                     <option 
@@ -1253,11 +1354,11 @@ const resetLedgerFilters = () => {
 
                             <!-- From Account (for transfers) -->
                             <div v-if="transactionForm.type === 'transfer'">
-                                <label for="tx-from-account" class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">From Account</label>
+                                <label for="tx-from-account" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">From Account</label>
                                 <select 
                                     id="tx-from-account" 
                                     v-model="transactionForm.from_account_id"
-                                    class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                    class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                                     required
                                 >
                                     <option v-for="acc in accounts" :key="acc.id" :value="acc.id">
@@ -1269,11 +1370,11 @@ const resetLedgerFilters = () => {
 
                             <!-- To Account (for transfers) -->
                             <div v-if="transactionForm.type === 'transfer'">
-                                <label for="tx-to-account" class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">To Account</label>
+                                <label for="tx-to-account" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">To Account</label>
                                 <select 
                                     id="tx-to-account" 
                                     v-model="transactionForm.to_account_id"
-                                    class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                    class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                                     required
                                 >
                                     <option v-for="acc in accounts" :key="acc.id" :value="acc.id">
@@ -1285,12 +1386,12 @@ const resetLedgerFilters = () => {
 
                             <!-- Transaction Date -->
                             <div>
-                                <label for="tx-date" class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Date</label>
+                                <label for="tx-date" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Date</label>
                                 <input 
                                     type="date" 
                                     id="tx-date" 
                                     v-model="transactionForm.transaction_date"
-                                    class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                    class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                                     required
                                 />
                                 <div v-if="transactionForm.errors.transaction_date" class="text-rose-500 text-xs mt-1">{{ transactionForm.errors.transaction_date }}</div>
@@ -1298,12 +1399,12 @@ const resetLedgerFilters = () => {
 
                             <!-- Description -->
                             <div>
-                                <label for="tx-desc" class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Description</label>
+                                <label for="tx-desc" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Description</label>
                                 <textarea 
                                     id="tx-desc" 
                                     v-model="transactionForm.description"
                                     rows="3"
-                                    class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                    class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                                     placeholder="Enter description..."
                                 ></textarea>
                                 <div v-if="transactionForm.errors.description" class="text-rose-500 text-xs mt-1">{{ transactionForm.errors.description }}</div>
@@ -1311,11 +1412,11 @@ const resetLedgerFilters = () => {
                         </div>
 
                         <!-- Modal Footer -->
-                        <div class="flex items-center justify-end p-6 border-t border-slate-100 dark:border-slate-700 rounded-b gap-3">
+                        <div class="flex items-center justify-end p-6 border-t border-slate-100 dark:border-slate-800 rounded-b gap-3">
                             <button 
                                 type="button" 
                                 @click="showTransactionModal = false"
-                                class="px-4 py-2 text-slate-500 dark:text-slate-400 font-semibold text-sm hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors duration-150"
+                                class="px-4 py-2 text-slate-700 dark:text-slate-600 font-semibold text-sm hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors duration-150"
                             >
                                 Cancel
                             </button>
@@ -1336,15 +1437,15 @@ const resetLedgerFilters = () => {
         <!-- CATEGORY MODAL -->
         <div v-if="showCategoryModal" class="fixed inset-0 z-50 flex items-center justify-center overflow-x-hidden overflow-y-auto outline-none focus:outline-none bg-slate-900/60 backdrop-blur-sm">
             <div class="relative w-full max-w-md mx-auto my-6 px-4">
-                <div class="relative flex flex-col w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl outline-none focus:outline-none">
+                <div class="relative flex flex-col w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl outline-none focus:outline-none">
                     <!-- Modal Header -->
-                    <div class="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-700 rounded-t">
+                    <div class="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800 rounded-t">
                         <h3 class="text-xl font-extrabold text-slate-900 dark:text-white">
                             Create Category
                         </h3>
                         <button 
                             @click="showCategoryModal = false"
-                            class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                            class="p-1 text-slate-600 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
                             id="close-category-modal-btn"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1358,12 +1459,12 @@ const resetLedgerFilters = () => {
                         <div class="p-6 space-y-4">
                             <!-- Category Name -->
                             <div>
-                                <label for="cat-name" class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Category Name</label>
+                                <label for="cat-name" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Category Name</label>
                                 <input 
                                     type="text" 
                                     id="cat-name" 
                                     v-model="categoryForm.name"
-                                    class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                    class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                                     placeholder="Food, Salary, Utilities..."
                                     required
                                 />
@@ -1372,7 +1473,7 @@ const resetLedgerFilters = () => {
 
                             <!-- Category Type -->
                             <div>
-                                <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Category Type</label>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">Category Type</label>
                                 <div class="grid grid-cols-2 gap-4">
                                     <button 
                                         type="button"
@@ -1380,7 +1481,7 @@ const resetLedgerFilters = () => {
                                         class="py-2 rounded-xl text-sm font-bold border transition duration-150"
                                         :class="categoryForm.type === 'expense' 
                                             ? 'bg-rose-50 border-rose-500 text-rose-700 dark:bg-rose-950/30 dark:border-rose-500 dark:text-rose-400' 
-                                            : 'bg-white border-slate-200 dark:bg-slate-800 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-750'"
+                                            : 'bg-white border-slate-200 dark:bg-slate-900 dark:border-slate-800 text-slate-600 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-750'"
                                         id="cat-type-expense-btn"
                                     >
                                         Expense Category
@@ -1391,7 +1492,7 @@ const resetLedgerFilters = () => {
                                         class="py-2 rounded-xl text-sm font-bold border transition duration-150"
                                         :class="categoryForm.type === 'income' 
                                             ? 'bg-emerald-50 border-emerald-500 text-emerald-700 dark:bg-emerald-950/30 dark:border-emerald-500 dark:text-emerald-400' 
-                                            : 'bg-white border-slate-200 dark:bg-slate-800 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-750'"
+                                            : 'bg-white border-slate-200 dark:bg-slate-900 dark:border-slate-800 text-slate-600 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-750'"
                                         id="cat-type-income-btn"
                                     >
                                         Income Category
@@ -1402,7 +1503,7 @@ const resetLedgerFilters = () => {
 
                             <!-- Color Palette -->
                             <div>
-                                <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Theme Color</label>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">Theme Color</label>
                                 <div class="flex flex-wrap gap-2.5">
                                     <button 
                                         v-for="color in colors" 
@@ -1419,11 +1520,11 @@ const resetLedgerFilters = () => {
                         </div>
 
                         <!-- Modal Footer -->
-                        <div class="flex items-center justify-end p-6 border-t border-slate-100 dark:border-slate-700 rounded-b gap-3">
+                        <div class="flex items-center justify-end p-6 border-t border-slate-100 dark:border-slate-800 rounded-b gap-3">
                             <button 
                                 type="button" 
                                 @click="showCategoryModal = false"
-                                class="px-4 py-2 text-slate-500 dark:text-slate-400 font-semibold text-sm hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors duration-150"
+                                class="px-4 py-2 text-slate-700 dark:text-slate-600 font-semibold text-sm hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors duration-150"
                             >
                                 Cancel
                             </button>
@@ -1444,15 +1545,15 @@ const resetLedgerFilters = () => {
         <!-- BUDGET MODAL -->
         <div v-if="showBudgetModal" class="fixed inset-0 z-50 flex items-center justify-center overflow-x-hidden overflow-y-auto outline-none focus:outline-none bg-slate-900/60 backdrop-blur-sm">
             <div class="relative w-full max-w-sm mx-auto my-6 px-4">
-                <div class="relative flex flex-col w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl outline-none focus:outline-none">
+                <div class="relative flex flex-col w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl outline-none focus:outline-none">
                     <!-- Modal Header -->
-                    <div class="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-700 rounded-t">
+                    <div class="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800 rounded-t">
                         <h3 class="text-lg font-extrabold text-slate-900 dark:text-white">
                             Set Budget Limit
                         </h3>
                         <button 
                             @click="showBudgetModal = false"
-                            class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                            class="p-1 text-slate-600 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
                             id="close-budget-modal-btn"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1464,7 +1565,7 @@ const resetLedgerFilters = () => {
                     <!-- Modal Body -->
                     <form @submit.prevent="submitBudget">
                         <div class="p-6 space-y-4">
-                            <div class="text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
+                            <div class="text-xs font-bold text-slate-700 dark:text-slate-600 bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
                                 Category: <span class="text-slate-850 dark:text-slate-100 font-extrabold">{{ selectedCategoryForBudget?.name }}</span>
                                 <br/>
                                 Month: <span class="text-slate-850 dark:text-slate-100 font-extrabold">{{ budgetForm.month }}</span>
@@ -1472,13 +1573,13 @@ const resetLedgerFilters = () => {
 
                             <!-- Budget Limit Amount -->
                             <div>
-                                <label for="budget-limit" class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Monthly Budget Limit ($)</label>
+                                <label for="budget-limit" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Monthly Budget Limit ($)</label>
                                 <input 
                                     type="number" 
                                     step="0.01" 
                                     id="budget-limit" 
                                     v-model="budgetForm.amount"
-                                    class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                    class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                                     placeholder="Enter maximum spend..."
                                     required
                                     min="0"
@@ -1488,11 +1589,11 @@ const resetLedgerFilters = () => {
                         </div>
 
                         <!-- Modal Footer -->
-                        <div class="flex items-center justify-end p-6 border-t border-slate-100 dark:border-slate-700 rounded-b gap-3">
+                        <div class="flex items-center justify-end p-6 border-t border-slate-100 dark:border-slate-800 rounded-b gap-3">
                             <button 
                                 type="button" 
                                 @click="showBudgetModal = false"
-                                class="px-4 py-2 text-slate-500 dark:text-slate-400 font-semibold text-sm hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors duration-150"
+                                class="px-4 py-2 text-slate-700 dark:text-slate-600 font-semibold text-sm hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors duration-150"
                             >
                                 Cancel
                             </button>
@@ -1513,15 +1614,15 @@ const resetLedgerFilters = () => {
         <!-- ACCOUNT MODAL -->
         <div v-if="showAccountModal" class="fixed inset-0 z-50 flex items-center justify-center overflow-x-hidden overflow-y-auto outline-none focus:outline-none bg-slate-900/60 backdrop-blur-sm">
             <div class="relative w-full max-w-md mx-auto my-6 px-4">
-                <div class="relative flex flex-col w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl outline-none focus:outline-none">
+                <div class="relative flex flex-col w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl outline-none focus:outline-none">
                     <!-- Modal Header -->
-                    <div class="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-700 rounded-t">
+                    <div class="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800 rounded-t">
                         <h3 class="text-xl font-extrabold text-slate-900 dark:text-white">
                             {{ isEditingAccount ? 'Modify Account' : 'Create New Account' }}
                         </h3>
                         <button 
                             @click="showAccountModal = false"
-                            class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                            class="p-1 text-slate-600 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
                             id="close-account-modal-btn"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1535,12 +1636,12 @@ const resetLedgerFilters = () => {
                         <div class="p-6 space-y-4">
                             <!-- Account Name -->
                             <div>
-                                <label for="acc-name" class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Account Name</label>
+                                <label for="acc-name" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Account Name</label>
                                 <input 
                                     type="text" 
                                     id="acc-name" 
                                     v-model="accountForm.name"
-                                    class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                    class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                                     placeholder="City Bank, bKash Personal, Pocket Cash..."
                                     required
                                 />
@@ -1549,11 +1650,11 @@ const resetLedgerFilters = () => {
 
                             <!-- Account Type -->
                             <div>
-                                <label for="acc-type" class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Account Type</label>
+                                <label for="acc-type" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Account Type</label>
                                 <select 
                                     id="acc-type" 
                                     v-model="accountForm.type"
-                                    class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                    class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                                 >
                                     <option value="bank">Bank Account</option>
                                     <option value="mobile_wallet">Mobile Wallet (bKash, Nagad, etc.)</option>
@@ -1566,13 +1667,13 @@ const resetLedgerFilters = () => {
 
                             <!-- Initial Balance -->
                             <div>
-                                <label for="acc-balance" class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Initial Balance</label>
+                                <label for="acc-balance" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Initial Balance</label>
                                 <input 
                                     type="number" 
                                     step="0.01" 
                                     id="acc-balance" 
                                     v-model="accountForm.initial_balance"
-                                    class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                    class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                                     placeholder="0.00"
                                     required
                                 />
@@ -1581,7 +1682,7 @@ const resetLedgerFilters = () => {
 
                             <!-- Theme Color -->
                             <div>
-                                <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Theme Color</label>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">Theme Color</label>
                                 <div class="flex flex-wrap gap-2.5">
                                     <button 
                                         v-for="color in colors" 
@@ -1598,11 +1699,11 @@ const resetLedgerFilters = () => {
                         </div>
 
                         <!-- Modal Footer -->
-                        <div class="flex items-center justify-end p-6 border-t border-slate-100 dark:border-slate-700 rounded-b gap-3">
+                        <div class="flex items-center justify-end p-6 border-t border-slate-100 dark:border-slate-800 rounded-b gap-3">
                             <button 
                                 type="button" 
                                 @click="showAccountModal = false"
-                                class="px-4 py-2 text-slate-500 dark:text-slate-400 font-semibold text-sm hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors duration-150"
+                                class="px-4 py-2 text-slate-700 dark:text-slate-600 font-semibold text-sm hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors duration-150"
                             >
                                 Cancel
                             </button>

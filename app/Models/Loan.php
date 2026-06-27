@@ -16,6 +16,7 @@ class Loan extends Model
         'due_date',
         'description',
         'status', // 'active', 'repaid'
+        'recurring_schedule_id',
     ];
 
     protected $casts = [
@@ -31,5 +32,10 @@ class Loan extends Model
     public function transactions(): HasMany
     {
         return $this->hasMany(Transaction::class);
+    }
+
+    public function recurringSchedule(): BelongsTo
+    {
+        return $this->belongsTo(RecurringSchedule::class);
     }
 }
