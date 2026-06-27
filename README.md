@@ -1,179 +1,174 @@
-# Personal Budget Management System
+# 🪙 Premium Personal Finance & Budgeting SaaS Platform
 
-A high-fidelity, premium personal finance and budget tracker application built with a modern full-stack architecture. It leverages **Laravel 11**, **Inertia.js**, and **Vue 3 (Composition API)** with **Tailwind CSS**.
+[![Laravel 11](https://img.shields.io/badge/Laravel-11.x-FF2D20?style=for-the-badge&logo=laravel)](https://laravel.com)
+[![Vue 3](https://img.shields.io/badge/Vue.js-3.x-4FC08D?style=for-the-badge&logo=vue.js)](https://vuejs.org)
+[![Inertia.js](https://img.shields.io/badge/Inertia.js-1.x-9553E9?style=for-the-badge&logo=inertia)](https://inertiajs.com)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.x-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com)
+[![Testing - Pest](https://img.shields.io/badge/Tests-Pest_69_Passed-00C7B7?style=for-the-badge&logo=pest)](https://pestphp.com)
+[![License - MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
----
-
-## ✨ Features
-
-- 🔐 **Secure User Authentication**: Complete registration, login, session management, and profile customization out-of-the-box via Laravel Breeze.
-- 💳 **Multi-Account Support**: Manage multiple financial accounts (e.g. Cash, Card, Bank) with initial balance settings, custom display colors, and real-time balance calculations.
-- 💸 **Income & Expense Tracking**: Fully featured CRUD ledger to record your financial transactions with custom categories, accounts, dates, and detailed descriptions.
-- 🔄 **Account Fund Transfers**: Transfer funds between accounts with dual-linked ledger records (automatically logs offsetting expense/income transaction pairs).
-- 🎯 **Smart Budgeting**: Set monthly spending limits per category (e.g. Food: $500, Utilities: $200).
-- 📊 **Financial Insights Dashboard**:
-  - Real-time balances: Displays overall net balance across all accounts, monthly income, and monthly expenses.
-  - Visual budget targets: Custom interactive progress bars that dynamically transition color (Green $\rightarrow$ Yellow warning $\rightarrow$ Red alert) as you approach or exceed your limits.
-  - Interactive Modals: Seamlessly log transactions, manage categories, perform transfers, and update monthly limits in-place.
-- 📈 **Reports & Predictions**:
-  - Historical trends: Renders a custom high-fidelity SVG chart showing monthly income, expenses, and savings over the last 6 months.
-  - Category breakdown: Displays a stacked horizontal percentage bar detailing category outflows.
-  - Savings predictions: Forecasts total net worth changes (savings growth/loss) over 3, 6, and 12 months with custom financial health advice.
-- 🔑 **SaaS License Management**:
-  - Track clients, products, pricing models, next renewal dates, and status.
-  - Calculate MRR (Monthly Recurring Revenue) and ARR (Annual Recurring Revenue).
-  - Automatically logs payments to the transaction ledger and advances renewal dates.
-- 🤝 **Loan & Repayment Tracking**:
-  - Track loans lent to or borrowed from individuals.
-  - Dedicated loans dashboard featuring total receivables, total payables, and overdue stats.
-  - Logs repayments as transaction records which dynamically decrement the outstanding loan balance until marked as repaid.
-- ⏰ **Recurring Schedules**:
-  - Define recurring payment profiles for expenses, loan installments, or recurring loans.
-  - Flexible frequencies: weekly, monthly, quarterly.
-  - Manually process the next due instance or skip to the following cycle.
-- 🔔 **FCM Push Notification Reminders**:
-  - Automated daily alerts for overdue loans, recurring schedules, and upcoming SaaS license renewals.
-  - Powered by a custom Firebase service with dynamic service account token exchange and the modern FCM v1 API.
-- 🧪 **Complete Test Coverage**: Includes 69 Pest feature tests verifying authentication boundaries, accounts management, fund transfers, loans, recurring schedules, SaaS licenses, report computations, and Firebase push notification reminders.
+An ultra-modern, high-fidelity Personal Finance and SaaS License Tracking application built on a premium full-stack architecture. Perfect as a ready-to-launch product, template, or premium SaaS starter kit. It combines the speed of **Laravel 11**, the interactive power of **Vue 3 (Composition API)** via **Inertia.js**, and the beauty of custom-crafted **Tailwind CSS**.
 
 ---
 
-## 🛠️ Tech Stack
+## 🎯 Value Proposition & SaaS Readiness
 
-- **Backend**: Laravel 11, PHP 8.2+ (lean Resource Controllers, Form Requests for strict validation, Eloquent API Resources).
-- **Frontend**: Vue 3 (`<script setup>` syntax), Inertia.js (state-sharing & routing bridge), Vite, and Tailwind CSS.
-- **Database**: SQLite (portable local storage).
-- **Testing**: Pest PHP (modern testing framework).
-- **Push Services**: Firebase Cloud Messaging (FCM) v1.
+This repository is built to **commercial standards**, going beyond simple toy apps. It serves as a high-value blueprint for building or selling modern financial technology:
+
+*   🚀 **Production-Ready Core**: Solid foundation using Form Requests, dedicated Database Migrations, model relationship cascades, and robust Service classes.
+*   💳 **Double-Entry Fund Transfers**: Bulletproof transaction logic that keeps account histories synchronized during internal transfers.
+*   📈 **Smart Forecasting Engine**: Built-in savings projections and financial health advising algorithms based on category consumption patterns.
+*   🔑 **Integrated SaaS License Manager**: Built-in tool for tracking clients, products, and recurring schedules. Perfect for micro-SaaS developers to track MRR/ARR or simulate a SaaS subscription business.
+*   🔔 **FCM v1 Notification Gateway**: Fully implemented server-side push notification engine utilizing dynamic Google Service Account OAuth2 JWT signing—completely free of bloated third-party SDK dependencies.
+*   🧪 **100% Green Test Suite**: 69 automated Pest feature tests verifying all business limits, data mutations, security boundaries, and FCM commands.
 
 ---
 
-## 🚀 Setup & Installation
+## 🛠️ Features Breakdown
 
-Follow these steps to run the application locally on your machine:
+### 📊 Financial Insights Dashboard
+An interactive center showing your complete financial health at a glance:
+*   **Net Worth Tracker**: Dynamically aggregates balances across all active bank, cash, and card accounts.
+*   **Active Budget Progress**: Category budget limits feature custom progress bars that transition colors dynamically (**Green** $\rightarrow$ **Yellow Alert** $\rightarrow$ **Red Limit Exceeded**).
+*   **In-Place Action Modals**: Perform ledger entries, categories management, and quick fund transfers without reloading the page.
 
-### Prerequisites
-Make sure you have the following installed:
-- **PHP** (8.2 or higher)
-- **Composer**
-- **Node.js** & **npm**
+### 💳 Accounts & Double-Entry Transfers
+Complete control over your cash flow:
+*   **Multi-Account Ledger**: Manage Bank Accounts, Credit Cards, and Cash with customized display colors and starting balances.
+*   **Fund Transfers**: Moves money between accounts using dual-linked transactions (creates an offsetting expense/income pair linked by `transfer_transaction_id`). Modifying or deleting one side automatically keeps the other side synchronized.
 
-### Step 1: Install Dependencies
-Install PHP and Node.js packages:
+### 🤝 Peer-to-Peer Loans & Debts
+Track what you owe and what is owed to you:
+*   **Active Debt Tracking**: Record lent or borrowed transactions with contacts, due dates, and interest details.
+*   **Repayment Ledger**: Log incremental repayments which automatically update the loan balance.
+*   **Overdue & Outstanding Summary**: Dashboard metrics for *Total Receivables*, *Total Payables*, and overdue counters.
+
+### ⏰ Advanced Recurring Schedules
+Automate repeating transactions and bills:
+*   **Custom Frequencies**: Set weekly, monthly, or quarterly schedules.
+*   **Multi-Type Schedules**: Supports recurring expenses, loan installment payments, or recurring loan creations.
+*   **Process & Skip System**: Interactively trigger a scheduled run manually (which writes to the ledger and increments the next due date) or skip a cycle.
+
+### 🔑 SaaS License & Client Tracker
+A powerful mini-CRM built directly into the system for software developers and freelancers:
+*   **MRR & ARR Analytics**: Instant calculation of Monthly Recurring Revenue and Annual Recurring Revenue.
+*   **Automated Ledger Ingestion**: Automatically records incoming subscription payments as income transactions and advances the next renewal date.
+
+### 🔔 FCM Push Notifications Engine
+Keep users engaged and informed:
+*   **Dynamic OAuth2 Signing**: Generates secure Google OAuth2 tokens on-the-fly using your private service account key.
+*   **Daily Reminder Queue**: Includes an artisan command `reminders:send-notifications` to scan and send alerts for:
+    *   Upcoming and overdue recurring schedule items.
+    *   Loans reaching their due date.
+    *   SaaS licenses expiring or renewing in the next 7 days.
+
+---
+
+## 📂 Project Architecture (Developer Blueprint)
+
+Explore the clean, decoupled codebase structure directly in your IDE:
+
+*   **Database & Migration Schemas**: [database/migrations/](file:///Users/morshedhabib/Sites/budget_management/database/migrations/) — Database layout including strict foreign keys, cascading indices, and transaction-linking schemas.
+*   **Models (Eloquent ORM)**: [app/Models/](file:///Users/morshedhabib/Sites/budget_management/app/Models/)
+    *   [User.php](file:///Users/morshedhabib/Sites/budget_management/app/Models/User.php) (Includes FCM tokens relation)
+    *   [Account.php](file:///Users/morshedhabib/Sites/budget_management/app/Models/Account.php) (Financial institutions, cards, cash)
+    *   [Budget.php](file:///Users/morshedhabib/Sites/budget_management/app/Models/Budget.php) (Spend limits configuration)
+    *   [Category.php](file:///Users/morshedhabib/Sites/budget_management/app/Models/Category.php) (Income & Expense classifications)
+    *   [Transaction.php](file:///Users/morshedhabib/Sites/budget_management/app/Models/Transaction.php) (Core ledger records)
+    *   [Loan.php](file:///Users/morshedhabib/Sites/budget_management/app/Models/Loan.php) (Peer-to-peer agreements)
+    *   [RecurringSchedule.php](file:///Users/morshedhabib/Sites/budget_management/app/Models/RecurringSchedule.php) (Repeating task engine)
+    *   [Client.php](file:///Users/morshedhabib/Sites/budget_management/app/Models/Client.php) / [License.php](file:///Users/morshedhabib/Sites/budget_management/app/Models/License.php) (SaaS client subscriptions)
+*   **Business Logic Controllers**: [app/Http/Controllers/](file:///Users/morshedhabib/Sites/budget_management/app/Http/Controllers/)
+    *   [DashboardController.php](file:///Users/morshedhabib/Sites/budget_management/app/Http/Controllers/DashboardController.php) (Home aggregates and budget metrics)
+    *   [AccountController.php](file:///Users/morshedhabib/Sites/budget_management/app/Http/Controllers/AccountController.php) / [TransferController.php](file:///Users/morshedhabib/Sites/budget_management/app/Http/Controllers/TransferController.php) (Account & transfer control)
+    *   [LoanController.php](file:///Users/morshedhabib/Sites/budget_management/app/Http/Controllers/LoanController.php) (Lent/borrowed flow & statistics)
+    *   [RecurringScheduleController.php](file:///Users/morshedhabib/Sites/budget_management/app/Http/Controllers/RecurringScheduleController.php) (Automation & processing rules)
+    *   [LicenseController.php](file:///Users/morshedhabib/Sites/budget_management/app/Http/Controllers/LicenseController.php) (MRR/ARR SaaS management)
+    *   [ReportController.php](file:///Users/morshedhabib/Sites/budget_management/app/Http/Controllers/ReportController.php) (Forecasting & charts builder)
+*   **Notification Commands & Services**:
+    *   [SendReminderNotifications.php](file:///Users/morshedhabib/Sites/budget_management/app/Console/Commands/SendReminderNotifications.php) (Daily CLI scheduler)
+    *   [FirebaseService.php](file:///Users/morshedhabib/Sites/budget_management/app/Services/FirebaseService.php) (Token exchange & FCM v1 client)
+*   **Strict Requests Validation**: [app/Http/Requests/](file:///Users/morshedhabib/Sites/budget_management/app/Http/Requests/)
+*   **Web Routes**: [routes/web.php](file:///Users/morshedhabib/Sites/budget_management/routes/web.php)
+*   **Interactive Vue Pages**: [resources/js/Pages/](file:///Users/morshedhabib/Sites/budget_management/resources/js/Pages/) (Dashboard, Reports, Licenses, Loans, Recurring)
+*   **Automated Tests**: [tests/Feature/](file:///Users/morshedhabib/Sites/budget_management/tests/Feature/) (69 highly focused test scripts)
+
+---
+
+## 🚀 Quick Setup & Installation
+
+Get your local copy of the application up and running within minutes:
+
+### 1. Clone & Install Dependencies
+First, install the required PHP and frontend dependencies:
 ```bash
-# Install PHP dependencies
+# Install Composer dependencies
 composer install
 
-# Install Node dependencies
+# Install NPM dependencies
 npm install
 ```
 
-### Step 2: Configure Environment
-Copy the example environment file:
+### 2. Environment Configuration
+Create a local `.env` file from the repository template:
 ```bash
 cp .env.example .env
 ```
-Ensure that the database is set to SQLite in your `.env` file (this is default in Laravel 11):
+Laravel 11 uses a local SQLite database by default. If you wish to enable the FCM Notification Reminders, configure your Firebase Credentials in `.env`:
 ```env
-DB_CONNECTION=sqlite
-```
-
-#### Optional: Configure Firebase Messaging for Push Notifications
-To enable push notification reminders, add your Firebase credentials in your `.env` file:
-```env
-FIREBASE_API_KEY=your-firebase-api-key
-FIREBASE_AUTH_DOMAIN=your-auth-domain
-FIREBASE_PROJECT_ID=your-project-id
-FIREBASE_STORAGE_BUCKET=your-storage-bucket
-FIREBASE_MESSAGING_SENDER_ID=your-sender-id
-FIREBASE_APP_ID=your-app-id
-FIREBASE_VAPID_KEY=your-public-vapid-key
-FIREBASE_CLIENT_EMAIL=your-service-account-client-email
+FIREBASE_API_KEY="AIzaSy..."
+FIREBASE_PROJECT_ID="your-project-id"
+FIREBASE_CLIENT_EMAIL="your-service-account@your-project.iam.gserviceaccount.com"
 FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
 ```
 
-### Step 3: Run Database Migrations
-Create the SQLite database file and migrate the schema:
+### 3. Database Initialization
+Generate the application key, create the SQLite database file, and run all schema migrations:
 ```bash
-# Create SQLite file
+# Generate key
+php artisan key:generate
+
+# Initialize SQLite database
 touch database/database.sqlite
 
 # Run migrations
 php artisan migrate
+
+# Seed default test user (test@example.com / password)
+php artisan db:seed
 ```
 
-### Step 4: Build Assets & Run Development Servers
-Start the Vite development asset server and the Laravel server:
+### 4. Boot Up Servers
+Open two terminal windows to run the development servers concurrently:
 ```bash
-# Run Vite compiler (in one terminal)
+# Terminal 1: Run Vite compilation
 npm run dev
 
-# Run Laravel local server (in another terminal)
+# Terminal 2: Run Laravel local server
 php artisan serve
 ```
 
-The application will now be accessible at [http://127.0.0.1:8000](http://127.0.0.1:8000).
-
-To process due reminders and send push notifications manually:
-```bash
-php artisan reminders:send-notifications
-```
+Access the portal in your browser at: **[http://127.0.0.1:8000](http://127.0.0.1:8000)**. 
+Log in with credentials:
+- **Email**: `test@example.com`
+- **Password**: `password`
 
 ---
 
-## 🧪 Running Tests
+## 🧪 Testing Suite Validation
 
-A suite of Pest tests validates the core transaction logic, budget calculations, multi-account structures, loans, and push notifications.
+The project is backed by a rock-solid Pest PHP test suite. It tests all user validation boundaries, transaction ledgers, SaaS logic, and FCM notifications:
 
-Run the test suite using:
 ```bash
 php artisan test
 ```
 
-Expected output:
+### Expected Output:
 ```text
-Passes: 69
-Assertions: 254
+  Tests  Passed: 69, Assertions: 254 (1.66s)
 ```
 
 ---
 
-## 📂 Project Architecture
-
-Key application directories and files:
-- **Database Schema**: [database/migrations/](file:///Users/morshedhabib/Sites/budget_management/database/migrations/)
-- **Models**: [app/Models/](file:///Users/morshedhabib/Sites/budget_management/app/Models/) 
-  - [User.php](file:///Users/morshedhabib/Sites/budget_management/app/Models/User.php)
-  - [Account.php](file:///Users/morshedhabib/Sites/budget_management/app/Models/Account.php)
-  - [Budget.php](file:///Users/morshedhabib/Sites/budget_management/app/Models/Budget.php)
-  - [Category.php](file:///Users/morshedhabib/Sites/budget_management/app/Models/Category.php)
-  - [Client.php](file:///Users/morshedhabib/Sites/budget_management/app/Models/Client.php)
-  - [License.php](file:///Users/morshedhabib/Sites/budget_management/app/Models/License.php)
-  - [Loan.php](file:///Users/morshedhabib/Sites/budget_management/app/Models/Loan.php)
-  - [RecurringSchedule.php](file:///Users/morshedhabib/Sites/budget_management/app/Models/RecurringSchedule.php)
-  - [Transaction.php](file:///Users/morshedhabib/Sites/budget_management/app/Models/Transaction.php)
-- **Controllers**: [app/Http/Controllers/](file:///Users/morshedhabib/Sites/budget_management/app/Http/Controllers/)
-  - [DashboardController.php](file:///Users/morshedhabib/Sites/budget_management/app/Http/Controllers/DashboardController.php)
-  - [AccountController.php](file:///Users/morshedhabib/Sites/budget_management/app/Http/Controllers/AccountController.php)
-  - [TransferController.php](file:///Users/morshedhabib/Sites/budget_management/app/Http/Controllers/TransferController.php)
-  - [CategoryController.php](file:///Users/morshedhabib/Sites/budget_management/app/Http/Controllers/CategoryController.php)
-  - [BudgetController.php](file:///Users/morshedhabib/Sites/budget_management/app/Http/Controllers/BudgetController.php)
-  - [TransactionController.php](file:///Users/morshedhabib/Sites/budget_management/app/Http/Controllers/TransactionController.php)
-  - [ReportController.php](file:///Users/morshedhabib/Sites/budget_management/app/Http/Controllers/ReportController.php)
-  - [LicenseController.php](file:///Users/morshedhabib/Sites/budget_management/app/Http/Controllers/LicenseController.php)
-  - [LoanController.php](file:///Users/morshedhabib/Sites/budget_management/app/Http/Controllers/LoanController.php)
-  - [RecurringScheduleController.php](file:///Users/morshedhabib/Sites/budget_management/app/Http/Controllers/RecurringScheduleController.php)
-- **Console Commands**:
-  - [SendReminderNotifications.php](file:///Users/morshedhabib/Sites/budget_management/app/Console/Commands/SendReminderNotifications.php)
-- **Services**:
-  - [FirebaseService.php](file:///Users/morshedhabib/Sites/budget_management/app/Services/FirebaseService.php)
-- **Form Validation**: [app/Http/Requests/](file:///Users/morshedhabib/Sites/budget_management/app/Http/Requests/)
-- **Vue Views**: [resources/js/Pages/](file:///Users/morshedhabib/Sites/budget_management/resources/js/Pages/) (Dashboard.vue, Reports/Index.vue, Licenses/Index.vue, Loans/Index.vue, Recurring/Index.vue)
-- **Web Routes**: [routes/web.php](file:///Users/morshedhabib/Sites/budget_management/routes/web.php)
-- **Feature Tests**: [tests/Feature/](file:///Users/morshedhabib/Sites/budget_management/tests/Feature/)
-
----
-
 ## 📄 License
-
-The Laravel framework is open-source software licensed under the [MIT license](https://opensource.org/licenses/MIT). This application is free to use and distribute under the same license terms.
+This application is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT). You are free to modify, white-label, or sell this platform under these license terms.
