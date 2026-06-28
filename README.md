@@ -1,6 +1,5 @@
 <div align="center">
   <br />
-  <img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20Logo%20Mono%20Dark.svg" alt="FinFlow Logo" width="140" style="margin-bottom: 12px;" />
   
   # ⚡ FinFlow
   ### **Premium Financial Ledger & SaaS Billing Boilerplate**
@@ -41,6 +40,69 @@
 
 ---
 
+## 📂 Project Directory Structure
+
+```text
+├── app/
+│   ├── Http/
+│   │   ├── Controllers/
+│   │   │   ├── Auth/                     # Authentication controllers (Login, Registration, etc.)
+│   │   │   ├── AccountController.php     # Manages user financial accounts
+│   │   │   ├── BudgetController.php      # Manages monthly category budget allocations
+│   │   │   ├── CategoryController.php    # Manages transaction categories
+│   │   │   ├── DashboardController.php   # Coordinates core personal ledger statistics
+│   │   │   ├── LicenseController.php     # Controls SaaS client licenses & payment logs
+│   │   │   ├── PremiumServiceOrderController.php # Manages service requests (Superadmin)
+│   │   │   ├── RecurringScheduleController.php   # Handles recurring payments & logs
+│   │   │   ├── ReportController.php      # Compiles financial reports & forecast predictions
+│   │   │   └── SuperadminController.php  # Handles permissions toggles, bans, and deletions
+│   │   └── Middleware/
+│   │       ├── AbortsIfBanned.php        # Logs out and blocks banned accounts
+│   │       ├── CheckModulePermission.php # Gates disabled pages based on permissions
+│   │       ├── EnsureUserIsSuperadmin.php # Restricts endpoints to superadmins
+│   │       └── HandleInertiaRequests.php # Shares auth and flash session states
+│   └── Models/
+│       ├── Account.php                   # Account model (Cash, Bank, Mobile Wallet)
+│       ├── Budget.php                    # Spending target budgets model
+│       ├── Category.php                  # Transaction categories model
+│       ├── Client.php                    # SaaS client profile model
+│       ├── License.php                   # SaaS active contract/license model
+│       ├── PremiumServiceOrder.php       # Lead generation requests model
+│       ├── RecurringSchedule.php         # Recurring expenses/incomes scheduler model
+│       ├── Transaction.php               # Ledger transactions entries model
+│       └── User.php                      # Base authenticatable user model
+├── bootstrap/
+│   └── app.php                           # Global middleware and configuration registry
+├── database/
+│   ├── factories/                        # Model factories for automated testing
+│   ├── migrations/                       # SQL table creation migrations files
+│   └── seeders/                          # Database default entries seeders
+├── public/
+│   └── favicon.svg                       # Customized high-fidelity vector favicon
+├── resources/
+│   ├── css/
+│   │   └── app.css                       # Modernized Tailwind styles stylesheet
+│   └── js/
+│       ├── Components/                   # Reusable Vue components (Modals, Icons, etc.)
+│       ├── Layouts/
+│       │   ├── AuthenticatedLayout.vue   # Left-sidebar admin panel wrapper with footer
+│       │   └── GuestLayout.vue           # Login / register screen template
+│       └── Pages/
+│           ├── Auth/                     # Authentication pages (Login, Register, etc.)
+│           ├── Dashboard.vue             # User central statistics and transactions list
+│           ├── Forecast/                 # Financial projection charts views
+│           ├── Licenses/                 # Client listings & SaaS MRR/ARR manager
+│           ├── Loans/                    # Debt ledger & repayment tracking
+│           ├── Recurring/                # Scheduled transactions dashboard
+│           ├── Reports/                  # Historic trend lines & breakdown page
+│           └── Superadmin/
+│               └── Dashboard.vue         # Command center tabs (Users, Permissions, Orders)
+└── routes/
+    └── web.php                           # Web endpoints and middlewared route groups
+```
+
+---
+
 ## 🛠️ Stack Architecture
 
 ```mermaid
@@ -51,11 +113,6 @@ graph TD
     MiddlewareCheck -->|Yes| Logout[Logout Session / Redirect]
     MiddlewareCheck -->|No| AccessGranted[Access Granted]
 ```
-
-- **Backend**: Laravel 11 (PHP 8.2+) with Resource Controllers & strict Form Request validations.
-- **Frontend**: Vue 3 (`<script setup>` Composition API), Inertia.js (SPA bridge), Vite compiler, and Tailwind CSS.
-- **Database**: SQLite (Highly portable local database storage).
-- **Testing**: Pest PHP (Modern testing framework).
 
 ---
 
