@@ -3,15 +3,25 @@ import { ref, onMounted } from 'vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
-import NavLink from '@/Components/NavLink.vue';
-import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import { initializeApp } from 'firebase/app';
 import { getMessaging, getToken, onMessage } from 'firebase/messaging';
 
-const showingNavigationDropdown = ref(false);
+const isSidebarOpen = ref(false);
 
 const page = usePage();
+const hasModulePermission = (moduleName) => {
+    const user = page.props.auth.user;
+    if (!user) return false;
+    if (user.is_superadmin) return true;
+    
+    const permissions = user.module_permissions;
+    if (!permissions) {
+        return moduleName !== 'licenses';
+    }
+    
+    return permissions[moduleName] !== false;
+};
 const firebaseConfig = page.props.firebase;
 const notificationPermission = ref(typeof Notification !== 'undefined' ? Notification.permission : 'denied');
 const isSubscribing = ref(false);
@@ -41,7 +51,6 @@ const registerPush = async () => {
     }
     
     try {
-        // Register the service worker with Firebase config parameters as query arguments
         const queryString = new URLSearchParams(firebaseConfig).toString();
         const registration = await navigator.serviceWorker.register(
             `/firebase-messaging-sw.js?${queryString}`,
@@ -57,16 +66,11 @@ const registerPush = async () => {
         });
         
         if (token) {
-            // Save the token to the backend
             await window.axios.post(route('profile.fcm-token'), { fcm_token: token });
             console.log('FCM Token registered successfully.');
-        } else {
-            console.warn('No registration token available. Request permission to generate one.');
         }
         
-        // Listen for foreground messages
         onMessage(messaging, (payload) => {
-            console.log('Message received in foreground: ', payload);
             if (Notification.permission === 'granted' && registration && payload) {
                 const title = payload.notification?.title || payload.data?.title || 'Reminder Alert';
                 const body = payload.notification?.body || payload.data?.body || 'You have an upcoming reminder.';
@@ -96,354 +100,335 @@ onMounted(() => {
 </script>
 
 <template>
-    <div>
-        <div class="min-h-screen bg-gray-100 dark:bg-slate-950">
-            <nav
-                class="border-b border-gray-100 bg-white dark:border-slate-800 dark:bg-slate-900"
-            >
-                <!-- Primary Navigation Menu -->
-                <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <div class="flex h-16 justify-between">
-                        <div class="flex">
-                            <!-- Logo -->
-                            <div class="flex shrink-0 items-center">
-                                <Link :href="route('dashboard')">
-                                    <div class="flex items-center gap-2.5">
-                                        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                            </svg>
-                                        </div>
-                                        <span class="text-xl font-black bg-gradient-to-r from-white via-slate-100 to-indigo-400 bg-clip-text text-transparent tracking-tight">FinFlow</span>
-                                    </div>
-                                </Link>
-                            </div>
+    <div class="min-h-screen bg-slate-50 dark:bg-slate-950 flex">
+        <!-- Sidebar Backdrop (for Mobile) -->
+        <div 
+            v-if="isSidebarOpen" 
+            @click="isSidebarOpen = false" 
+            class="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm lg:hidden transition-opacity duration-300"
+        ></div>
 
-                            <!-- Navigation Links -->
-                            <div
-                                class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex"
-                            >
-                                <NavLink
-                                    :href="route('dashboard')"
-                                    :active="route().current('dashboard')"
-                                >
-                                    Dashboard
-                                </NavLink>
-                                <NavLink
-                                    :href="route('reports.index')"
-                                    :active="route().current('reports.index')"
-                                >
-                                    Reports & Projections
-                                </NavLink>
-                                <NavLink
-                                    :href="route('reports.forecast')"
-                                    :active="route().current('reports.forecast')"
-                                >
-                                    Forecast
-                                </NavLink>
-                                <NavLink
-                                    :href="route('licenses.index')"
-                                    :active="route().current('licenses.index')"
-                                    
-                                >
-                                    SaaS Licenses
-                                </NavLink>
-                                <NavLink
-                                    :href="route('loans.index')"
-                                    :active="route().current('loans.index')"
-                                >
-                                    Loans & Debts
-                                </NavLink>
-                                <NavLink
-                                    :href="route('recurring.index')"
-                                    :active="route().current('recurring.index')"
-                                >
-                                    Recurring Items
-                                </NavLink>
-                            </div>
-                        </div>
+        <!-- Sidebar Navigation -->
+        <aside 
+            :class="[
+                'fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-slate-900 border-r border-slate-800 transition-transform duration-300 ease-in-out lg:translate-x-0 lg:fixed lg:inset-y-0 lg:left-0',
+                isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+            ]"
+        >
+            <!-- Logo Section -->
+            <div class="flex h-16 shrink-0 items-center border-b border-slate-800 px-6 gap-3">
+                <Link :href="route('dashboard')" class="flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-400 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <span class="text-lg font-black text-white tracking-tight">FinFlow</span>
+                </Link>
+            </div>
 
-                        <div class="hidden sm:ms-6 sm:flex sm:items-center gap-3">
-                            <!-- Push Notification Toggle -->
-                            <button
-                                v-if="firebaseConfig && firebaseConfig.apiKey"
-                                @click="requestNotificationPermission"
-                                :disabled="isSubscribing"
-                                class="p-2 text-gray-500 hover:text-indigo-650 dark:hover:text-indigo-400 focus:outline-none transition relative group rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800"
-                                :class="{
-                                    'text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-900/50 bg-indigo-50/30 dark:bg-indigo-950/20': notificationPermission === 'granted',
-                                    'text-amber-500 border-amber-200 dark:border-amber-900/50 bg-amber-50/30 dark:bg-amber-950/20': notificationPermission === 'default',
-                                    'text-gray-400 opacity-60 cursor-not-allowed': notificationPermission === 'denied'
-                                }"
-                                :title="
-                                    notificationPermission === 'granted'
-                                        ? 'Reminders push notifications active'
-                                        : notificationPermission === 'default'
-                                            ? 'Click to enable reminders push notifications'
-                                            : 'Notifications are blocked in your browser settings'
-                                "
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    class="h-5 w-5"
-                                    :class="{ 'animate-bounce': notificationPermission === 'default' && !isSubscribing }"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                                    />
-                                    <path
-                                        v-if="notificationPermission === 'denied'"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M3 3l18 18"
-                                        class="stroke-red-500"
-                                    />
-                                </svg>
-                                
-                                <span class="absolute top-full mt-2 hidden group-hover:block bg-slate-900 dark:bg-slate-800 text-white text-[10px] py-1 px-2 rounded whitespace-nowrap z-50 shadow-md">
-                                    {{ 
-                                        notificationPermission === 'granted' 
-                                            ? 'Push Notifications: Active' 
-                                            : notificationPermission === 'default' 
-                                                ? 'Enable Push Notifications' 
-                                                : 'Notifications Blocked' 
-                                    }}
-                                </span>
-                            </button>
-
-                            <!-- Settings Dropdown -->
-                            <div class="relative">
-                                <Dropdown align="right" width="48">
-                                    <template #trigger>
-                                        <span class="inline-flex rounded-md">
-                                            <button
-                                                type="button"
-                                                class="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-700 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none dark:bg-slate-900 dark:text-gray-600 dark:hover:text-gray-300"
-                                            >
-                                                {{ $page.props.auth.user.name }}
-
-                                                <svg
-                                                    class="-me-0.5 ms-2 h-4 w-4"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    viewBox="0 0 20 20"
-                                                    fill="currentColor"
-                                                >
-                                                    <path
-                                                        fill-rule="evenodd"
-                                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                        clip-rule="evenodd"
-                                                    />
-                                                </svg>
-                                            </button>
-                                        </span>
-                                    </template>
-
-                                    <template #content>
-                                        <DropdownLink
-                                            :href="route('profile.edit')"
-                                        >
-                                            Profile
-                                        </DropdownLink>
-                                        <DropdownLink
-                                            :href="route('logout')"
-                                            method="post"
-                                            as="button"
-                                        >
-                                            Log Out
-                                        </DropdownLink>
-                                    </template>
-                                </Dropdown>
-                            </div>
-                        </div>
-
-                        <!-- Hamburger -->
-                        <div class="-me-2 flex items-center sm:hidden">
-                            <button
-                                @click="
-                                    showingNavigationDropdown =
-                                        !showingNavigationDropdown
-                                "
-                                class="inline-flex items-center justify-center rounded-md p-2 text-gray-600 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-700 focus:bg-gray-100 focus:text-gray-700 focus:outline-none dark:text-gray-700 dark:hover:bg-gray-900 dark:hover:text-gray-600 dark:focus:bg-gray-900 dark:focus:text-gray-600"
-                            >
-                                <svg
-                                    class="h-6 w-6"
-                                    stroke="currentColor"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        :class="{
-                                            hidden: showingNavigationDropdown,
-                                            'inline-flex':
-                                                !showingNavigationDropdown,
-                                        }"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M4 6h16M4 12h16M4 18h16"
-                                    />
-                                    <path
-                                        :class="{
-                                            hidden: !showingNavigationDropdown,
-                                            'inline-flex':
-                                                showingNavigationDropdown,
-                                        }"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M6 18L18 6M6 6l12 12"
-                                    />
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Responsive Navigation Menu -->
-                <div
-                    :class="{
-                        block: showingNavigationDropdown,
-                        hidden: !showingNavigationDropdown,
-                    }"
-                    class="sm:hidden"
+            <!-- Navigation Links -->
+            <nav class="flex-1 space-y-1.5 px-4 py-6 overflow-y-auto">
+                <!-- Dashboard Link -->
+                <Link
+                    :href="route('dashboard')"
+                    :class="[
+                        'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all duration-150',
+                        route().current('dashboard')
+                            ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/10'
+                            : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                    ]"
                 >
-                    <div class="space-y-1 pb-3 pt-2">
-                        <ResponsiveNavLink
-                            :href="route('dashboard')"
-                            :active="route().current('dashboard')"
-                        >
-                            Dashboard
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink
-                            :href="route('reports.index')"
-                            :active="route().current('reports.index')"
-                        >
-                            Reports & Projections
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink
-                            :href="route('reports.forecast')"
-                            :active="route().current('reports.forecast')"
-                        >
-                            Forecast
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink
-                            :href="route('licenses.index')"
-                            :active="route().current('licenses.index')"
-                        >
-                            SaaS Licenses
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink
-                            :href="route('loans.index')"
-                            :active="route().current('loans.index')"
-                        >
-                            Loans & Debts
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink
-                            :href="route('recurring.index')"
-                            :active="route().current('recurring.index')"
-                        >
-                            Recurring Items
-                        </ResponsiveNavLink>
-                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z" />
+                    </svg>
+                    <span>Dashboard</span>
+                </Link>
 
-                    <!-- Responsive Settings Options -->
-                    <div
-                        class="border-t border-gray-200 pb-1 pt-4 dark:border-gray-600"
-                    >
-                        <div class="px-4 flex items-center justify-between">
-                            <div>
-                                <div
-                                    class="text-base font-medium text-gray-800 dark:text-gray-200"
-                                >
-                                    {{ $page.props.auth.user.name }}
-                                </div>
-                                <div class="text-sm font-medium text-gray-500">
-                                    {{ $page.props.auth.user.email }}
-                                </div>
-                            </div>
-                            
-                            <!-- Mobile Push Notification toggle button -->
-                            <button
-                                v-if="firebaseConfig && firebaseConfig.apiKey"
-                                @click="requestNotificationPermission"
-                                :disabled="isSubscribing"
-                                class="p-2 bg-slate-100 dark:bg-slate-900 rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-950/20 transition flex items-center gap-1.5 border border-slate-200 dark:border-slate-800"
-                                :class="{
-                                    'text-indigo-650 dark:text-indigo-400 border-indigo-200 dark:border-indigo-900/50 bg-indigo-50/30 dark:bg-indigo-950/20': notificationPermission === 'granted',
-                                    'text-amber-500 border-amber-200 dark:border-amber-900/50 bg-amber-50/30 dark:bg-amber-950/20': notificationPermission === 'default',
-                                    'text-gray-400 opacity-60': notificationPermission === 'denied'
-                                }"
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    class="h-4.5 w-4.5"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                                    />
-                                    <path
-                                        v-if="notificationPermission === 'denied'"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M3 3l18 18"
-                                        class="stroke-red-500"
-                                    />
-                                </svg>
-                                <span class="text-[10px] font-bold uppercase tracking-wider">
-                                    {{ 
-                                        notificationPermission === 'granted' 
-                                            ? 'Active' 
-                                            : notificationPermission === 'default' 
-                                                ? 'Enable' 
-                                                : 'Blocked' 
-                                    }}
-                                </span>
-                            </button>
-                        </div>
+                <!-- Reports Link -->
+                <Link
+                    v-if="hasModulePermission('ledger')"
+                    :href="route('reports.index')"
+                    :class="[
+                        'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all duration-150',
+                        route().current('reports.index')
+                            ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/10'
+                            : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                    ]"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    <span>Reports & Projections</span>
+                </Link>
 
-                        <div class="mt-3 space-y-1">
-                            <ResponsiveNavLink :href="route('profile.edit')">
-                                Profile
-                            </ResponsiveNavLink>
-                            <ResponsiveNavLink
-                                :href="route('logout')"
-                                method="post"
-                                as="button"
-                            >
-                                Log Out
-                            </ResponsiveNavLink>
-                        </div>
-                    </div>
-                </div>
+                <!-- Forecast Link -->
+                <Link
+                    v-if="hasModulePermission('ledger')"
+                    :href="route('reports.forecast')"
+                    :class="[
+                        'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all duration-150',
+                        route().current('reports.forecast')
+                            ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/10'
+                            : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                    ]"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <span>Forecast</span>
+                </Link>
+
+                <!-- SaaS Licenses Link -->
+                <Link
+                    v-if="hasModulePermission('licenses')"
+                    :href="route('licenses.index')"
+                    :class="[
+                        'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all duration-150',
+                        route().current('licenses.index')
+                            ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/10'
+                            : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                    ]"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m-2 4a2 2 0 012 2m-2-4a2 2 0 11-4 0m8 8a2 2 0 01-2-2V5a2 2 0 00-2-2H4a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2zM4 14h.01M4 18h.01" />
+                    </svg>
+                    <span>SaaS Licenses</span>
+                </Link>
+
+                <!-- Loans & Debts Link -->
+                <Link
+                    v-if="hasModulePermission('loans')"
+                    :href="route('loans.index')"
+                    :class="[
+                        'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all duration-150',
+                        route().current('loans.index')
+                            ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/10'
+                            : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                    ]"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Loans & Debts</span>
+                </Link>
+
+                <!-- Recurring Items Link -->
+                <Link
+                    v-if="hasModulePermission('recurring')"
+                    :href="route('recurring.index')"
+                    :class="[
+                        'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all duration-150',
+                        route().current('recurring.index')
+                            ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/10'
+                            : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                    ]"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Recurring Items</span>
+                </Link>
+
+                <!-- Superadmin Panel Link -->
+                <Link
+                    v-if="$page.props.auth.user.is_superadmin"
+                    :href="route('superadmin.index')"
+                    :class="[
+                        'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all duration-150',
+                        route().current('superadmin.index')
+                            ? 'bg-indigo-650 text-white shadow-md shadow-indigo-500/10'
+                            : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                    ]"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    <span>Superadmin Panel</span>
+                </Link>
             </nav>
 
-            <!-- Page Heading -->
-            <header
-                class="bg-white shadow dark:bg-slate-900"
-                v-if="$slots.header"
-            >
-                <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-                    <slot name="header" />
+            <!-- Bottom User Profile Area in Sidebar -->
+            <div class="border-t border-slate-800 p-4 shrink-0 flex flex-col gap-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="w-9 h-9 rounded-full bg-indigo-600/20 text-indigo-405 font-extrabold text-xs flex items-center justify-center uppercase tracking-wider shrink-0">
+                            {{ $page.props.auth.user.name.substring(0, 2) }}
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-xs font-black text-white truncate">{{ $page.props.auth.user.name }}</p>
+                            <p class="text-[9px] text-slate-500 truncate mt-0.5">{{ $page.props.auth.user.email }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <Link 
+                        :href="route('profile.edit')"
+                        class="flex-1 py-1.5 px-3 bg-slate-800 hover:bg-slate-750 hover:text-white text-slate-350 rounded-lg text-center font-bold text-[10px] uppercase tracking-wider transition"
+                    >
+                        Profile
+                    </Link>
+                    <Link 
+                        :href="route('logout')" 
+                        method="post" 
+                        as="button"
+                        class="flex-1 py-1.5 px-3 bg-red-950/20 hover:bg-red-900/30 text-red-400 rounded-lg text-center font-bold text-[10px] uppercase tracking-wider transition border border-red-900/50"
+                    >
+                        Log Out
+                    </Link>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Panel Content -->
+        <div class="flex-1 flex flex-col min-h-screen overflow-hidden lg:pl-64">
+            <!-- Header/Top Navigation Bar -->
+            <header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 h-16 flex items-center justify-between px-6 shrink-0 z-30 shadow-sm">
+                <div class="flex items-center gap-3">
+                    <!-- Hamburger / Toggle button for mobile -->
+                    <button 
+                        @click="isSidebarOpen = !isSidebarOpen"
+                        class="p-1.5 text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 rounded-lg lg:hidden focus:outline-none"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+
+                    <!-- Mobile Brand Logo/Title -->
+                    <div class="flex items-center gap-2 lg:hidden">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-600 dark:text-indigo-400 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        <span class="text-base font-black text-slate-900 dark:text-white tracking-tight">FinFlow</span>
+                    </div>
+                </div>
+
+                <!-- Top Right controls -->
+                <div class="flex items-center gap-3">
+                    <!-- Push Notification Toggle Button -->
+                    <button
+                        v-if="firebaseConfig && firebaseConfig.apiKey"
+                        @click="requestNotificationPermission"
+                        :disabled="isSubscribing"
+                        class="p-2 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 focus:outline-none transition relative group rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+                        :class="{
+                            'text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-900/50 bg-indigo-50/30 dark:bg-indigo-950/20': notificationPermission === 'granted',
+                            'text-amber-500 border-amber-200 dark:border-amber-900/50 bg-amber-50/30 dark:bg-amber-950/20': notificationPermission === 'default',
+                            'text-gray-400 opacity-60 cursor-not-allowed': notificationPermission === 'denied'
+                        }"
+                        :title="
+                            notificationPermission === 'granted'
+                                ? 'Reminders push notifications active'
+                                : notificationPermission === 'default'
+                                    ? 'Click to enable reminders push notifications'
+                                    : 'Notifications are blocked in your browser settings'
+                        "
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-5 w-5"
+                            :class="{ 'animate-bounce': notificationPermission === 'default' && !isSubscribing }"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                            />
+                            <path
+                                v-if="notificationPermission === 'denied'"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M3 3l18 18"
+                                class="stroke-red-500"
+                            />
+                        </svg>
+                        
+                        <span class="absolute top-full mt-2 right-0 hidden group-hover:block bg-slate-900 dark:bg-slate-800 text-white text-[10px] py-1 px-2 rounded whitespace-nowrap z-50 shadow-md">
+                            {{ 
+                                notificationPermission === 'granted' 
+                                    ? 'Push Notifications: Active' 
+                                    : notificationPermission === 'default' 
+                                        ? 'Enable Push Notifications' 
+                                        : 'Notifications Blocked' 
+                            }}
+                        </span>
+                    </button>
+
+                    <!-- Settings Dropdown -->
+                    <div class="relative">
+                        <Dropdown align="right" width="48">
+                            <template #trigger>
+                                <span class="inline-flex rounded-md">
+                                    <button
+                                        type="button"
+                                        class="inline-flex items-center rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition duration-150"
+                                    >
+                                        {{ $page.props.auth.user.name }}
+                                        <svg
+                                            class="-me-0.5 ms-2 h-4 w-4 text-slate-400"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 20 20"
+                                            fill="currentColor"
+                                        >
+                                            <path
+                                                fill-rule="evenodd"
+                                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                clip-rule="evenodd"
+                                            />
+                                        </svg>
+                                    </button>
+                                </span>
+                            </template>
+
+                            <template #content>
+                                <DropdownLink :href="route('profile.edit')">
+                                    Profile
+                                </DropdownLink>
+                                <DropdownLink
+                                    :href="route('logout')"
+                                    method="post"
+                                    as="button"
+                                >
+                                    Log Out
+                                </DropdownLink>
+                            </template>
+                        </Dropdown>
+                    </div>
                 </div>
             </header>
 
             <!-- Page Content -->
-            <main>
-                <slot />
+            <main class="flex-1 overflow-y-auto min-h-0 bg-slate-50 dark:bg-slate-950 flex flex-col justify-between">
+                <div>
+                    <!-- Page Heading (rendered cleanly below header bar with full width spacing) -->
+                    <div v-if="$slots.header" class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 py-5 px-6 md:px-8">
+                        <div class="mx-auto max-w-7xl">
+                            <slot name="header" />
+                        </div>
+                    </div>
+
+                    <!-- Main Content Slot -->
+                    <slot />
+                </div>
+
+                <!-- Footer Section -->
+                <footer class="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-4 px-6 md:px-8 mt-8">
+                    <div class="mx-auto max-w-7xl flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400">
+                        <div class="flex items-center gap-1.5 font-semibold">
+                            <span class="font-extrabold text-indigo-600 dark:text-indigo-400">FinFlow</span>
+                            <span>&copy; 2026. All rights reserved.</span>
+                        </div>
+                        <div class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[10px] text-slate-400 dark:text-slate-500">
+                            <span>Developed by: <strong class="text-slate-650 dark:text-slate-350">PRANTIK-SOFT</strong></span>
+                            <span class="hidden sm:inline">|</span>
+                            <span>Version: <strong class="text-slate-650 dark:text-slate-350">1.1.0</strong></span>
+                        </div>
+                    </div>
+                </footer>
             </main>
         </div>
     </div>

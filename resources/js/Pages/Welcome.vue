@@ -1,5 +1,5 @@
 <script setup>
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 
 defineProps({
@@ -184,6 +184,31 @@ const faqs = ref([
 
 const toggleFaq = (index) => {
     faqs.value[index].open = !faqs.value[index].open;
+};
+
+// Premium Service Request Form State & Logic
+const serviceForm = useForm({
+    name: '',
+    email: '',
+    phone: '',
+    service_type: 'custom_feature',
+    budget: '500_1500',
+    description: '',
+});
+
+const showServiceSuccess = ref(false);
+
+const submitServiceOrder = () => {
+    serviceForm.post(route('premium-service-orders.store'), {
+        preserveScroll: true,
+        onSuccess: () => {
+            showServiceSuccess.value = true;
+            serviceForm.reset();
+            setTimeout(() => {
+                showServiceSuccess.value = false;
+            }, 6000);
+        },
+    });
 };
 </script>
 
@@ -674,7 +699,7 @@ const toggleFaq = (index) => {
                     </p>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <!-- Feature 1 -->
                     <div class="p-6 bg-slate-900/50 border border-slate-800 rounded-2xl space-y-4 hover:border-slate-700 transition duration-155 hover:-translate-y-1 relative overflow-hidden group">
                         <div class="absolute -right-10 -bottom-10 w-24 h-24 bg-indigo-500/5 rounded-full blur-xl group-hover:bg-indigo-500/10 transition duration-300"></div>
@@ -684,7 +709,7 @@ const toggleFaq = (index) => {
                             </svg>
                         </div>
                         <h3 class="text-lg font-bold text-white">Multi-Account & Transfers</h3>
-                        <p class="text-xs text-slate-600 leading-relaxed font-medium">
+                        <p class="text-xs text-slate-400 leading-relaxed font-medium">
                             Set up separate accounts for Bank Savings, Cash, or mobile wallets (bKash). Execute instant, double-entry transfers that keep ledger balances synchronized.
                         </p>
                     </div>
@@ -698,7 +723,7 @@ const toggleFaq = (index) => {
                             </svg>
                         </div>
                         <h3 class="text-lg font-bold text-white">Visual Budget Warnings</h3>
-                        <p class="text-xs text-slate-600 leading-relaxed font-medium">
+                        <p class="text-xs text-slate-400 leading-relaxed font-medium">
                             Set monthly limits on expense categories. Progress bars dynamically shift color (green &rarr; orange warning &rarr; red alert) to prevent overspending.
                         </p>
                     </div>
@@ -711,9 +736,9 @@ const toggleFaq = (index) => {
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                         </div>
-                        <h3 class="text-lg font-bold text-white">SaaS Client Log & MRR</h3>
-                        <p class="text-xs text-slate-600 leading-relaxed font-medium">
-                            Manage licenses and SaaS client subscriptions. Log payments with one click to auto-increment renewal dates and update the central ledger.
+                        <h3 class="text-lg font-bold text-white">SaaS Subscriptions & MRR</h3>
+                        <p class="text-xs text-slate-400 leading-relaxed font-medium">
+                            Manage licenses and SaaS client subscriptions. Log payments with one click to auto-increment renewal dates and automatically update the central ledger.
                         </p>
                     </div>
 
@@ -726,7 +751,7 @@ const toggleFaq = (index) => {
                             </svg>
                         </div>
                         <h3 class="text-lg font-bold text-white">Loans & Debts Tracker</h3>
-                        <p class="text-xs text-slate-600 leading-relaxed font-medium">
+                        <p class="text-xs text-slate-400 leading-relaxed font-medium">
                             Log lent or borrowed funds. Visual warning badges notify you of upcoming and overdue deadlines. Automatically record repayments back into account statements.
                         </p>
                     </div>
@@ -741,8 +766,22 @@ const toggleFaq = (index) => {
                             </svg>
                         </div>
                         <h3 class="text-lg font-bold text-white">Smart Predictions</h3>
-                        <p class="text-xs text-slate-600 leading-relaxed font-medium">
+                        <p class="text-xs text-slate-400 leading-relaxed font-medium">
                             Project your future finances dynamically. Generates 3, 6, and 12-month savings forecasts based on your rolling 3-month averages.
+                        </p>
+                    </div>
+
+                    <!-- Feature 6 -->
+                    <div class="p-6 bg-slate-900/50 border border-slate-800 rounded-2xl space-y-4 hover:border-slate-700 transition duration-155 hover:-translate-y-1 relative overflow-hidden group">
+                        <div class="absolute -right-10 -bottom-10 w-24 h-24 bg-sky-500/5 rounded-full blur-xl group-hover:bg-sky-500/10 transition duration-300"></div>
+                        <div class="w-10 h-10 rounded-lg bg-sky-500/10 flex items-center justify-center text-sky-450">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-bold text-white">Recurring Schedules</h3>
+                        <p class="text-xs text-slate-400 leading-relaxed font-medium">
+                            Automate billing and repeating bills on autopilot. Set schedules for rent, salaries, utilities, and subscriptions, then skip or process them in one click.
                         </p>
                     </div>
                 </div>
@@ -1039,6 +1078,205 @@ const toggleFaq = (index) => {
             </div>
         </section>
 
+        <!-- Premium Developer Services Section -->
+        <section id="premium-services" class="border-t border-slate-800 bg-slate-950/20 py-20 relative">
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-500/5 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+            
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+                <div class="text-center space-y-4 max-w-2xl mx-auto">
+                    <span class="text-xs font-bold text-indigo-400 uppercase tracking-widest">PRANTIK-SOFT SERVICES</span>
+                    <h2 class="text-3xl font-extrabold text-white tracking-tight">Need Custom Development or VPS Setup?</h2>
+                    <p class="text-sm text-slate-400 leading-relaxed font-semibold">
+                        Get tailored developer services directly from the creators of FinFlow to power up your business cash flows.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start max-w-5xl mx-auto">
+                    <!-- Left: Services details list -->
+                    <div class="lg:col-span-5 space-y-8">
+                        <h3 class="text-xl font-bold text-white">Why hire our developers?</h3>
+                        
+                        <div class="space-y-6">
+                            <!-- Service 1 -->
+                            <div class="flex gap-4">
+                                <div class="flex-shrink-0 w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-white">Custom Features Development</h4>
+                                    <p class="text-xs text-slate-400 mt-1 leading-relaxed">
+                                        Need specialized reports, custom transaction flows, or secondary integrations? We write clean, test-driven PHP & Vue code.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Service 2 -->
+                            <div class="flex gap-4">
+                                <div class="flex-shrink-0 w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-white">Cloud Deployment & VPS Setup</h4>
+                                    <p class="text-xs text-slate-400 mt-1 leading-relaxed">
+                                        We deploy FinFlow on AWS, DigitalOcean, or Linode with SQLite/PostgreSQL, SSL configs, automated backups, and sub-domain setups.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Service 3 -->
+                            <div class="flex gap-4">
+                                <div class="flex-shrink-0 w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-white">Local Wallet API Integration</h4>
+                                    <p class="text-xs text-slate-400 mt-1 leading-relaxed">
+                                        Accept local client payments automatically. We integrate payment checkouts like bKash, Nagad, Rocket, or SSLCommerz directly.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-4 bg-slate-900/60 rounded-2xl border border-slate-800 text-[11px] text-slate-400 leading-relaxed space-y-1">
+                            <p class="font-bold text-white text-xs mb-1">Direct Developer Contacts:</p>
+                            <p>📞 Phone: +8801735254295</p>
+                            <p>✉️ Email: mhsohel017@gmail.com</p>
+                        </div>
+                    </div>
+
+                    <!-- Right: Gorgeous form -->
+                    <div class="lg:col-span-7 bg-slate-800/40 border border-slate-700/60 rounded-3xl p-6 md:p-8 backdrop-blur-sm">
+                        <h3 class="text-lg font-black text-white mb-6">Order Premium Services</h3>
+
+                        <Transition
+                            enter-active-class="transition duration-300 ease-out"
+                            enter-from-class="transform scale-95 opacity-0"
+                            enter-to-class="transform scale-100 opacity-100"
+                        >
+                            <div v-if="showServiceSuccess" class="mb-6 p-4 bg-emerald-950/40 border border-emerald-900/50 rounded-2xl text-center space-y-2">
+                                <div class="w-10 h-10 bg-emerald-500/10 text-emerald-400 rounded-full flex items-center justify-center mx-auto">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </div>
+                                <h4 class="text-sm font-bold text-white">Order Request Received!</h4>
+                                <p class="text-xs text-slate-400 leading-relaxed">
+                                    Thank you! Your request has been successfully recorded in our leads log. PRANTIK-SOFT developers will review it and contact you shortly.
+                                </p>
+                            </div>
+                        </Transition>
+
+                        <form @submit.prevent="submitServiceOrder" class="space-y-4 text-xs font-semibold">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Your Name</label>
+                                    <input
+                                        v-model="serviceForm.name"
+                                        type="text"
+                                        required
+                                        placeholder="Full Name"
+                                        class="w-full rounded-xl border border-slate-700 bg-slate-900/60 text-slate-100 text-xs px-4 py-3 focus:border-indigo-500 focus:ring-indigo-500"
+                                        :class="{ 'opacity-50 pointer-events-none': serviceForm.processing }"
+                                    />
+                                    <span v-if="serviceForm.errors.name" class="text-[10px] text-rose-500 mt-1 block">{{ serviceForm.errors.name }}</span>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Email Address</label>
+                                    <input
+                                        v-model="serviceForm.email"
+                                        type="email"
+                                        required
+                                        placeholder="name@company.com"
+                                        class="w-full rounded-xl border border-slate-700 bg-slate-900/60 text-slate-100 text-xs px-4 py-3 focus:border-indigo-500 focus:ring-indigo-500"
+                                        :class="{ 'opacity-50 pointer-events-none': serviceForm.processing }"
+                                    />
+                                    <span v-if="serviceForm.errors.email" class="text-[10px] text-rose-500 mt-1 block">{{ serviceForm.errors.email }}</span>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Service Requested</label>
+                                    <select
+                                        v-model="serviceForm.service_type"
+                                        class="w-full rounded-xl border border-slate-700 bg-slate-900/60 text-slate-200 text-xs px-4 py-3 focus:border-indigo-500 focus:ring-indigo-500"
+                                        :class="{ 'opacity-50 pointer-events-none': serviceForm.processing }"
+                                    >
+                                        <option value="custom_feature">Custom Feature Development</option>
+                                        <option value="deployment_setup">Cloud & VPS Deployment</option>
+                                        <option value="api_integration">API & Payment Gateway Sync</option>
+                                        <option value="support">Priority SLA Support</option>
+                                        <option value="other">Other Requirements</option>
+                                    </select>
+                                    <span v-if="serviceForm.errors.service_type" class="text-[10px] text-rose-500 mt-1 block">{{ serviceForm.errors.service_type }}</span>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Estimated Budget</label>
+                                    <select
+                                        v-model="serviceForm.budget"
+                                        class="w-full rounded-xl border border-slate-700 bg-slate-900/60 text-slate-200 text-xs px-4 py-3 focus:border-indigo-500 focus:ring-indigo-500"
+                                        :class="{ 'opacity-50 pointer-events-none': serviceForm.processing }"
+                                    >
+                                        <option value="under_500">Under $500</option>
+                                        <option value="500_1500">$500 - $1,500</option>
+                                        <option value="1500_5000">$1,500 - $5,000</option>
+                                        <option value="above_5000">Above $5,000</option>
+                                    </select>
+                                    <span v-if="serviceForm.errors.budget" class="text-[10px] text-rose-500 mt-1 block">{{ serviceForm.errors.budget }}</span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Phone Number (Optional)</label>
+                                <input
+                                    v-model="serviceForm.phone"
+                                    type="text"
+                                    placeholder="+88017XXXXXXXX"
+                                    class="w-full rounded-xl border border-slate-700 bg-slate-900/60 text-slate-100 text-xs px-4 py-3 focus:border-indigo-500 focus:ring-indigo-500"
+                                    :class="{ 'opacity-50 pointer-events-none': serviceForm.processing }"
+                                />
+                                <span v-if="serviceForm.errors.phone" class="text-[10px] text-rose-500 mt-1 block">{{ serviceForm.errors.phone }}</span>
+                            </div>
+
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Detailed Project Requirements</label>
+                                <textarea
+                                    v-model="serviceForm.description"
+                                    rows="4"
+                                    required
+                                    placeholder="Explain your customized requirements, timelines, etc..."
+                                    class="w-full rounded-xl border border-slate-700 bg-slate-900/60 text-slate-100 text-xs px-4 py-3 focus:border-indigo-500 focus:ring-indigo-500"
+                                    :class="{ 'opacity-50 pointer-events-none': serviceForm.processing }"
+                                ></textarea>
+                                <span v-if="serviceForm.errors.description" class="text-[10px] text-rose-500 mt-1 block">{{ serviceForm.errors.description }}</span>
+                            </div>
+
+                            <button
+                                type="submit"
+                                :disabled="serviceForm.processing"
+                                class="w-full py-4 rounded-xl bg-gradient-to-r from-indigo-650 to-violet-600 hover:from-indigo-600 hover:to-violet-500 text-white font-extrabold text-xs shadow-lg shadow-indigo-600/30 transition-all duration-150 active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
+                            >
+                                <span v-if="serviceForm.processing" class="flex items-center justify-center gap-1.5">
+                                    <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Processing Order...
+                                </span>
+                                <span v-else>Submit Order Request</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Testimonials Section -->
         <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 space-y-12">
             <div class="text-center space-y-4 max-w-2xl mx-auto">
@@ -1172,9 +1410,9 @@ const toggleFaq = (index) => {
                     <span>SQLite Storage</span>
                 </div>
                 <div class="flex items-center justify-center gap-4 text-[10px] text-slate-600 border-t border-slate-800/50 pt-4 max-w-sm mx-auto">
-                    <span>Developed by: PRANTIK-SOFT</span>
-                    <span>Mobile: +8801735254295</span>
-                    <span>Email: contact@prantiksoft.com</span>
+                    <span>Developed by:<br> <strong>PRANTIK-SOFT</strong></span>
+                    <span>Mobile:<br> <strong>+8801735254295</strong></span>
+                    <span>Email:<br> <strong>mhsohel017@gmail.com</strong></span>
                 </div>
             </div>
         </footer>

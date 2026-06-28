@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'fcm_token'])]
+#[Fillable(['name', 'email', 'password', 'fcm_token', 'is_superadmin', 'module_permissions', 'is_banned'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -27,7 +27,26 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_superadmin' => 'boolean',
+            'is_banned' => 'boolean',
+            'module_permissions' => 'array',
         ];
+    }
+
+    /**
+     * Check if user has permission to access a specific module.
+     */
+    public function hasPermissionToModule(string $module): bool
+    {
+        if ($this->is_superadmin) {
+            return true;
+        }
+
+        if (is_null($this->module_permissions)) {
+            return $module !== 'licenses';
+        }
+
+        return (bool) ($this->module_permissions[$module] ?? ($module !== 'licenses'));
     }
 
     public function categories(): \Illuminate\Database\Eloquent\Relations\HasMany

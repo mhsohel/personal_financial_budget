@@ -447,7 +447,7 @@ const resetLedgerFilters = () => {
     <AuthenticatedLayout>
         <template #header>
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <h2 class="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                     Personal Budget Insights
                 </h2>
                 
@@ -485,6 +485,46 @@ const resetLedgerFilters = () => {
 
         <div class="py-8 bg-slate-50 dark:bg-slate-950 min-h-screen text-slate-900 dark:text-slate-100">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-8">
+                
+                <!-- Flash Notification Banner -->
+                <div v-if="$page.props.flash.error" class="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 p-4 rounded-2xl flex items-start gap-3 shadow-sm">
+                    <div class="text-red-650 dark:text-red-400 mt-0.5 shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-extrabold text-red-800 dark:text-red-400">Access Restricted</h4>
+                        <p class="text-xs text-red-700 dark:text-red-300/85 mt-0.5 leading-relaxed">{{ $page.props.flash.error }}</p>
+                    </div>
+                </div>
+
+                <div v-if="$page.props.flash.success" class="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/30 p-4 rounded-2xl flex items-start gap-3 shadow-sm">
+                    <div class="text-emerald-550 dark:text-emerald-400 mt-0.5 shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-extrabold text-emerald-800 dark:text-emerald-400">Success</h4>
+                        <p class="text-xs text-emerald-700 dark:text-emerald-300/85 mt-0.5 leading-relaxed">{{ $page.props.flash.success }}</p>
+                    </div>
+                </div>
+
+                <!-- If Ledger permission is disabled -->
+                <div v-if="!$page.props.auth.user.is_superadmin && $page.props.auth.user.module_permissions && $page.props.auth.user.module_permissions.ledger === false" class="bg-white dark:bg-slate-900 rounded-2xl shadow-md border border-slate-200 dark:border-slate-800 p-8 text-center space-y-4">
+                    <div class="w-16 h-16 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-450 flex items-center justify-center mx-auto shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-black text-slate-950 dark:text-white">Ledger Module Access Disabled</h3>
+                    <p class="text-sm text-slate-500 max-w-lg mx-auto leading-relaxed">
+                        Your account's access to the central financial ledger, account balances, and transaction logs has been disabled by the Administrator. Please use the navigation links above to access other enabled modules (like SaaS Subscriptions or Loans).
+                    </p>
+                </div>
+
+                <div v-else class="space-y-8">
                 
                 <!-- Recurring Reminders Widget -->
                 <div v-if="reminders && reminders.length > 0" class="bg-white dark:bg-slate-900 rounded-2xl shadow-md border border-amber-100 dark:border-amber-900/30 p-6 relative overflow-hidden">
@@ -1232,6 +1272,7 @@ const resetLedgerFilters = () => {
 
                 </div>
             </div>
+        </div>
         </div>
 
         <!-- TRANSACTION MODAL -->

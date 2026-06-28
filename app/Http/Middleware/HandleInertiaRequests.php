@@ -34,6 +34,10 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
+            'flash' => [
+                'success' => fn () => $request->session()->get('success'),
+                'error' => fn () => $request->session()->get('error'),
+            ],
             'firebase' => [
                 'apiKey' => config('services.firebase.api_key'),
                 'authDomain' => config('services.firebase.auth_domain'),

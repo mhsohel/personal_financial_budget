@@ -41,6 +41,40 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'module_permissions' => [
+                'ledger' => true,
+                'budgets' => true,
+                'licenses' => false,
+                'loans' => true,
+                'recurring' => true,
+            ],
+        ]);
+
+        // Seed basic categories of income and expenses
+        $defaultCategories = [
+            ['name' => 'Salary', 'type' => 'income', 'color' => '#10b981'],
+            ['name' => 'Freelance', 'type' => 'income', 'color' => '#3b82f6'],
+            ['name' => 'Investments', 'type' => 'income', 'color' => '#8b5cf6'],
+            ['name' => 'Other Income', 'type' => 'income', 'color' => '#f59e0b'],
+            ['name' => 'Food & Dining', 'type' => 'expense', 'color' => '#ef4444'],
+            ['name' => 'Rent & Utilities', 'type' => 'expense', 'color' => '#f97316'],
+            ['name' => 'Transportation', 'type' => 'expense', 'color' => '#ec4899'],
+            ['name' => 'Entertainment', 'type' => 'expense', 'color' => '#a855f7'],
+            ['name' => 'Shopping', 'type' => 'expense', 'color' => '#06b6d4'],
+            ['name' => 'Medical', 'type' => 'expense', 'color' => '#14b8a6'],
+        ];
+
+        foreach ($defaultCategories as $categoryData) {
+            \App\Models\Category::create(array_merge($categoryData, ['user_id' => $user->id]));
+        }
+
+        // Seed default Cash account
+        \App\Models\Account::create([
+            'user_id' => $user->id,
+            'name' => 'Cash',
+            'type' => 'cash',
+            'initial_balance' => 0.00,
+            'color' => '#4f46e5',
         ]);
 
         event(new Registered($user));
