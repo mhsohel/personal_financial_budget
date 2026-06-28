@@ -4,7 +4,7 @@
   # ⚡ FinFlow
   ### **Premium Financial Ledger & SaaS Billing Boilerplate**
   
-  [![Laravel 11](https://img.shields.io/badge/Laravel-11.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
+  [![Laravel 13](https://img.shields.io/badge/Laravel-13.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
   [![Vue 3](https://img.shields.io/badge/Vue.js-3.x-4FC08D?style=for-the-badge&logo=vue.js&logoColor=white)](https://vuejs.org)
   [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.x-06B6D4?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
   [![Pest Tests](https://img.shields.io/badge/Tests-86_Passed-8B5CF6?style=for-the-badge&logo=pest&logoColor=white)](https://pestphp.com)
