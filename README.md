@@ -1,113 +1,123 @@
-# ⚡ FinFlow — Premium Financial & SaaS Management Boilerplate
-
-FinFlow is a high-fidelity, production-ready personal finance tracker and SaaS client management boilerplate. Built with a modern monolithic architecture using **Laravel 11**, **Inertia.js**, and **Vue 3 (Composition API)**, it features premium aesthetics, dark-mode support, micro-animations, and full-height responsive navigation.
-
-This repository is optimized for developers seeking a robust, commercially saleable SaaS starter kit or a highly polished self-hosted financial manager.
-
----
-
-## 🎯 Key Capabilities & Commercial Features
-
-### 1. 📊 Income & Expense Ledger
-*   **Real-time Balances**: Instantly tracks total net worth, monthly income, and monthly expenses.
-*   **Visual Budget Targets**: Dynamic progress bars that automatically shift color based on consumption thresholds (Green $\rightarrow$ Yellow warning $\rightarrow$ Red alert) to warn users as they approach limits.
-*   **Accounts Management**: Support for multiple account types (Cash, Bank, Mobile Wallet, etc.) with custom initial balances. **Cash** is automatically seeded as the default account upon sign-up.
-*   **Category Management**: Seeding of 10 essential financial categories for immediate use.
-
-### 2. 🔑 SaaS License Tracker & Automated Billing
-*   **Subscription Logs**: Records active/inactive client subscriptions, pricing packages, billing cycles, and next renewal dates.
-*   **Automated Payment Ledger**: Logs client subscription payments directly to the transaction ledger and automatically advances the renewal date by a billing cycle.
-*   **MRR & ARR Tracking**: Real-time calculation of Monthly Recurring Revenue (MRR) and Annual Recurring Revenue (ARR) on a unified dashboard.
-
-### 3. 🛠️ Superadmin Management Panel
-*   **User Ban / Unban Toggle**: Immediately terminates banned user sessions and blocks system access via a global `AbortsIfBanned` middleware.
-*   **Detailed Module Permissions**: Superadmin can dynamically enable/disable access to modules (Ledger, Budgets, SaaS, Loans, Recurring Items) per user.
-*   **Dynamic Link Hiding**: Sidebar menu links are automatically hidden on the client-side for any modules not authorized for the user.
-*   **Safe Deletion**: Complete user deletion flow with safety guard clauses protecting against self-action.
-
-### 4. 🔔 Firebase Push Notifications
-*   **Opt-in Flow**: Native browser push notification subscription card in the header bar.
-*   **Service Worker Registry**: Integrates custom service workers (`firebase-messaging-sw.js`) to handle notifications background/foreground dispatching.
+<div align="center">
+  <br />
+  <img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20Logo%20Mono%20Dark.svg" alt="FinFlow Logo" width="140" style="margin-bottom: 12px;" />
+  
+  # ⚡ FinFlow
+  ### **Premium Financial Ledger & SaaS Billing Boilerplate**
+  
+  [![Laravel 11](https://img.shields.io/badge/Laravel-11.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
+  [![Vue 3](https://img.shields.io/badge/Vue.js-3.x-4FC08D?style=for-the-badge&logo=vue.js&logoColor=white)](https://vuejs.org)
+  [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.x-06B6D4?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
+  [![Pest Tests](https://img.shields.io/badge/Tests-86_Passed-8B5CF6?style=for-the-badge&logo=pest&logoColor=white)](https://pestphp.com)
+  
+  <p align="center">
+    A premium, high-contrast personal finance assistant, budget planner, and SaaS license manager.
+    <br />
+    Engineered with a streamlined monolithic stack for fast iteration, high security, and elegant usability.
+  </p>
+</div>
 
 ---
 
-## 🛠️ Tech Stack
+## 💎 Core Highlights
 
-*   **Core Framework**: [Laravel 11](https://laravel.com) (PHP 8.2+)
-*   **Frontend Bridge**: [Inertia.js](https://inertiajs.com) (Seamless routing & state sharing)
-*   **UI Layer**: [Vue 3](https://vuejs.org) (Composition API, `<script setup>`) & [Tailwind CSS](https://tailwindcss.com)
-*   **Data Layer**: SQLite (Highly portable, zero-configuration local database)
-*   **Testing Suite**: [Pest PHP](https://pestphp.com) (Modern testing framework)
+### 📊 Financial Ledger & Smart Budgeting
+- **Real-Time Health**: Instantly tracks cumulative savings, monthly cash flow, and spending ratios.
+- **Dynamic Category Limits**: Sets category-wise spending targets with warning progress bars that automatically change color (Green $\rightarrow$ Yellow warning $\rightarrow$ Red alert) as thresholds are reached.
+- **Seeded Accounts**: Automatically provisions a default **"Cash"** account (with initial balance `$0.00`) and **10 pre-defined financial categories** for every new sign-up.
+
+### 🔑 SaaS Licenses & Revenue Tracking
+- **Automated Renewals**: Set billing cycles (monthly/yearly), next renewal dates, and status. Logging a payment automatically registers income and advances the renewal date.
+- **Revenue Dashboard**: Displays Monthly Recurring Revenue (MRR) and Annual Recurring Revenue (ARR) calculations in real time.
+
+### 🛡️ Superadmin Command Center
+- **Granular Permissions Control**: Superadmins can enable or disable modules (Ledger, Budgets, SaaS, Loans, Recurring) for any user with real-time checkbox binds.
+- **Permission-Driven Sidebar**: Navigation links in the left-sidebar automatically show/hide on the client-side based on user access.
+- **Security Banning**: Toggle account bans instantly. Banned sessions are terminated on their next request via global middleware.
+- **Self-Action Guardrails**: Logic blocks prevents superadmins from banning or deleting their own accounts.
+
+### 🔔 FCM Push Notifications
+- **Browser Subscriptions**: Push notification permission modal with background token registration.
 
 ---
 
-## 🚀 Setup & Installation
+## 🛠️ Stack Architecture
 
-Follow these steps to run the application locally:
+```mermaid
+graph TD
+    Client[Vue 3 Client / Tailwind] <-->|Inertia.js Bridge| Controller[Resource Controllers]
+    Controller <-->|Eloquent Models| DB[(SQLite Database)]
+    Controller -->|AbortsIfBanned Middleware| MiddlewareCheck{Banned User?}
+    MiddlewareCheck -->|Yes| Logout[Logout Session / Redirect]
+    MiddlewareCheck -->|No| AccessGranted[Access Granted]
+```
+
+- **Backend**: Laravel 11 (PHP 8.2+) with Resource Controllers & strict Form Request validations.
+- **Frontend**: Vue 3 (`<script setup>` Composition API), Inertia.js (SPA bridge), Vite compiler, and Tailwind CSS.
+- **Database**: SQLite (Highly portable local database storage).
+- **Testing**: Pest PHP (Modern testing framework).
+
+---
+
+## 🚀 Setup & Local Execution
 
 ### Prerequisites
-*   **PHP** (8.2 or higher)
-*   **Composer**
-*   **Node.js** & **npm**
+- **PHP** (8.2 or higher)
+- **Composer**
+- **Node.js** & **npm**
 
-### Step 1: Clone & Install Dependencies
+### 1. Install Code Packages
 ```bash
 # Install PHP dependencies
 composer install
 
-# Install NPM dependencies
+# Install JS dependencies
 npm install
 ```
 
-### Step 2: Configure Environment
-Copy the example environment configuration:
+### 2. Environment Configurations
+Clone the local environment template:
 ```bash
 cp .env.example .env
 ```
-By default, the application is pre-configured to use SQLite. If you wish to enable **Firebase Push Notifications**, add your credentials in `.env`:
+*(Optional)* Add your Firebase credentials in `.env` to test Push Notifications:
 ```env
 FIREBASE_API_KEY=your_api_key
 FIREBASE_AUTH_DOMAIN=your_auth_domain
 FIREBASE_PROJECT_ID=your_project_id
-FIREBASE_STORAGE_BUCKET=your_storage_bucket
-FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
-FIREBASE_APP_ID=your_app_id
-FIREBASE_VAPID_KEY=your_public_vapid_key
+...
 ```
 
-### Step 3: Initialize Database
-Create the local SQLite database file and run migrations:
+### 3. Migrate Schema
 ```bash
-# Create SQLite file
+# Create SQLite DB file
 touch database/database.sqlite
 
-# Run migrations
+# Run database migrations
 php artisan migrate
 ```
 
-### Step 4: Build Assets & Start Servers
-Start the Vite development compiler and local PHP development server:
+### 4. Boot Dev Servers
 ```bash
-# Terminal 1: Vite compiler
+# Boot asset compiler (Terminal 1)
 npm run dev
 
-# Terminal 2: Laravel server
+# Boot local server (Terminal 2)
 php artisan serve
 ```
-The application will be accessible at [http://127.0.0.1:8000](http://127.0.0.1:8000).
+Open [http://127.0.0.1:8000](http://127.0.0.1:8000) in your web browser.
 
 ---
 
-## 🧪 Testing Suite
+## 🧪 Comprehensive Quality Assurance
 
-We maintain a strict quality assurance suite with **86 automated Pest tests** covering authentication, module permission gates, ledger CRUD, report charts, push notifications, and superadmin controllers.
+We maintain **86 feature test cases** validating authentication limits, category controls, SaaS logs, and superadmin middleware gates.
 
-Run the test suite using:
 ```bash
 php artisan test
 ```
 
-### Expected Output
+### Test Metrics
 ```text
 Tests:  86 passed (315 assertions)
 Time:   1.66s
@@ -115,19 +125,18 @@ Time:   1.66s
 
 ---
 
-## 📂 Project Architecture
+## 📂 Codebase Navigation
 
-Key application entrypoints and resources:
 *   **Database Schema**: [database/migrations/](file:///Users/morshedhabib/Sites/budget_management/database/migrations/)
 *   **Eloquent Models**: [app/Models/](file:///Users/morshedhabib/Sites/budget_management/app/Models/) (User, Account, Category, Budget, Transaction, Client, License, PremiumServiceOrder)
-*   **Controllers**: [app/Http/Controllers/](file:///Users/morshedhabib/Sites/budget_management/app/Http/Controllers/) (DashboardController, AccountController, CategoryController, TransactionController, ReportController, LicenseController, SuperadminController, PremiumServiceOrderController)
-*   **Inertia Middleware**: [app/Http/Middleware/](file:///Users/morshedhabib/Sites/budget_management/app/Http/Middleware/) (HandleInertiaRequests, AbortsIfBanned, CheckModulePermission, EnsureUserIsSuperadmin)
-*   **Vue Components & Layouts**: [resources/js/](file:///Users/morshedhabib/Sites/budget_management/resources/js/)
-*   **Route Definitions**: [routes/web.php](file:///Users/morshedhabib/Sites/budget_management/routes/web.php)
-*   **Automated Tests**: [tests/Feature/](file:///Users/morshedhabib/Sites/budget_management/tests/Feature/) (BudgetManagementTest, ReportTest, LicenseTest, SuperadminTest, PremiumServiceOrderTest)
+*   **Controllers**: [app/Http/Controllers/](file:///Users/morshedhabib/Sites/budget_management/app/Http/Controllers/)
+*   **Middlewares**: [app/Http/Middleware/](file:///Users/morshedhabib/Sites/budget_management/app/Http/Middleware/) (HandleInertiaRequests, AbortsIfBanned, CheckModulePermission, EnsureUserIsSuperadmin)
+*   **Vue Components & Pages**: [resources/js/](file:///Users/morshedhabib/Sites/budget_management/resources/js/)
+*   **Route Setup**: [routes/web.php](file:///Users/morshedhabib/Sites/budget_management/routes/web.php)
+*   **Test Suite**: [tests/Feature/](file:///Users/morshedhabib/Sites/budget_management/tests/Feature/)
 
 ---
 
-## 📄 License
+## 📄 License & Credits
 
-This software is open-source and licensed under the [MIT license](https://opensource.org/licenses/MIT). Developed by **PRANTIK-SOFT** (Mobile: +8801735254295, Email: mhsohel017@gmail.com).
+Distributed under the MIT license. Developed with pride by **PRANTIK-SOFT** (Mobile: +8801735254295, Email: mhsohel017@gmail.com).
