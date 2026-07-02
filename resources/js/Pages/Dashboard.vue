@@ -60,6 +60,7 @@ const isEditingTransaction = ref(false);
 const showCategoryModal = ref(false);
 const showBudgetModal = ref(false);
 const selectedCategoryForBudget = ref(null);
+const activeBudgetTab = ref('expense');
 const showAccountModal = ref(false);
 const isEditingAccount = ref(false);
 
@@ -85,7 +86,7 @@ const categoryForm = useForm({
 const budgetForm = useForm({
     category_id: '',
     amount: '',
-    month: props.current_month,
+    month: '',
 });
 
 const accountForm = useForm({
@@ -98,10 +99,12 @@ const accountForm = useForm({
 
 // Helper for format currency
 const formatCurrency = (value) => {
-    return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-    }).format(value);
+    const val = parseFloat(value) || 0;
+    const formatted = new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(Math.abs(val));
+    return (val < 0 ? '-' : '') + '৳' + formatted;
 };
 
 // Open Transaction Modal for Add
@@ -234,7 +237,7 @@ const openBudgetModal = (category) => {
     selectedCategoryForBudget.value = category;
     budgetForm.category_id = category.id;
     budgetForm.amount = category.budget_limit || '';
-    budgetForm.month = props.current_month;
+    budgetForm.month = category.type === 'income' ? props.current_month : '';
     budgetForm.clearErrors();
     showBudgetModal.value = true;
 };
@@ -274,6 +277,32 @@ const expenseCategories = computed(() => {
 
 const incomeCategories = computed(() => {
     return props.categories.filter(c => c.type === 'income');
+});
+
+const totalBudgetLimit = computed(() => {
+    return expenseCategories.value.reduce((sum, cat) => sum + (cat.budget_limit || 0), 0);
+});
+
+const totalBudgetSpent = computed(() => {
+    return expenseCategories.value.reduce((sum, cat) => {
+        if (cat.budget_limit > 0) {
+            return sum + (cat.spent || 0);
+        }
+        return sum;
+    }, 0);
+});
+
+const totalIncomeTargetLimit = computed(() => {
+    return incomeCategories.value.reduce((sum, cat) => sum + (cat.budget_limit || 0), 0);
+});
+
+const totalIncomeTargetEarned = computed(() => {
+    return incomeCategories.value.reduce((sum, cat) => {
+        if (cat.budget_limit > 0) {
+            return sum + (cat.earned || 0);
+        }
+        return sum;
+    }, 0);
 });
 
 // Recurring Reminders Actions
@@ -700,99 +729,264 @@ const resetLedgerFilters = () => {
                                 </div>
                             </div>
 
-                            <div v-if="expenseCategories.length === 0" class="py-12 text-center">
-                                <div class="bg-indigo-50 dark:bg-slate-950 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                                    </svg>
+                            <!-- Tab Switcher -->
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 dark:border-slate-800 mb-6 gap-4">
+                                <div class="flex gap-2">
+                                    <button 
+                                        type="button"
+                                        @click="activeBudgetTab = 'expense'"
+                                        class="px-4 py-2.5 text-xs font-bold uppercase tracking-wider border-b-2 transition-all duration-150 -mb-[1px]"
+                                        :class="activeBudgetTab === 'expense' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400 font-extrabold' : 'border-transparent text-slate-500 hover:text-slate-700'"
+                                    >
+                                        Expense Budgets
+                                    </button>
+                                    <button 
+                                        type="button"
+                                        @click="activeBudgetTab = 'income'"
+                                        class="px-4 py-2.5 text-xs font-bold uppercase tracking-wider border-b-2 transition-all duration-150 -mb-[1px]"
+                                        :class="activeBudgetTab === 'income' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400 font-extrabold' : 'border-transparent text-slate-500 hover:text-slate-700'"
+                                    >
+                                        Income Targets
+                                    </button>
                                 </div>
-                                <p class="text-slate-700 dark:text-slate-600 font-medium">No expense categories registered yet.</p>
-                                <p class="text-slate-600 dark:text-slate-700 text-xs mt-1">Create an expense category and set budget limits to track them.</p>
+                                <div class="pb-2 flex items-center gap-1.5 text-xs font-bold">
+                                    <span class="text-slate-600 dark:text-slate-400 uppercase tracking-wider text-[10px]">Savings Target (Current Month):</span>
+                                    <span class="text-sm font-black" :class="(totalIncomeTargetLimit - totalBudgetLimit) >= 0 ? 'text-emerald-650 dark:text-emerald-450' : 'text-rose-600 dark:text-rose-455'">
+                                        {{ (totalIncomeTargetLimit - totalBudgetLimit) >= 0 ? '+' : '' }}{{ formatCurrency(totalIncomeTargetLimit - totalBudgetLimit) }}
+                                    </span>
+                                </div>
                             </div>
 
-                            <div v-else class="space-y-6">
-                                <div 
-                                    v-for="cat in expenseCategories" 
-                                    :key="cat.id"
-                                    class="p-4 rounded-xl border border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-900/40 hover:shadow-sm transition-shadow duration-150"
-                                >
-                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-                                        <div class="flex items-center gap-2.5">
-                                            <span 
-                                                class="w-3.5 h-3.5 rounded-full inline-block flex-shrink-0"
-                                                :style="{ backgroundColor: cat.color }"
-                                            ></span>
-                                            <h4 class="font-bold text-slate-800 dark:text-slate-200">{{ cat.name }}</h4>
-                                            
-                                            <!-- Filter Ledger Button -->
-                                            <button 
-                                                @click="filterByCategory(cat.id)"
-                                                class="px-2 py-0.5 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 text-slate-450 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-md transition-colors text-[10px] font-bold border border-slate-200/40 dark:border-slate-800/60"
-                                                title="Filter ledger by this category"
-                                            >
-                                                Filter Ledger
-                                            </button>
-
-                                            <!-- Exceeded Alert -->
-                                            <span 
-                                                v-if="cat.budget_limit > 0 && cat.spent > cat.budget_limit"
-                                                class="px-2 py-0.5 bg-rose-50 dark:bg-rose-950/45 text-rose-600 dark:text-rose-400 text-[10px] font-bold rounded-full border border-rose-100 dark:border-rose-900/50 flex items-center gap-1 animate-pulse"
-                                            >
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
-                                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                                                </svg>
-                                                Limit Exceeded
+                            <!-- Expense Budgets Tab Content -->
+                            <div v-if="activeBudgetTab === 'expense'" class="space-y-6">
+                                <!-- Total Budget Summary Card -->
+                                <div v-if="totalBudgetLimit > 0" class="mb-6 p-4 rounded-xl bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100/50 dark:border-indigo-900/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                    <div class="space-y-1">
+                                        <p class="text-slate-600 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider">Total Monthly Budget Limit</p>
+                                        <h4 class="text-xl font-extrabold text-indigo-600 dark:text-indigo-400">
+                                            {{ formatCurrency(totalBudgetLimit) }}
+                                        </h4>
+                                    </div>
+                                    <div class="sm:text-right space-y-1">
+                                        <p class="text-slate-600 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider">Total Spent on Budgeted Categories</p>
+                                        <h4 class="text-xl font-extrabold" :class="totalBudgetSpent > totalBudgetLimit ? 'text-rose-600 dark:text-rose-450 animate-pulse' : 'text-slate-805 dark:text-slate-200'">
+                                            {{ formatCurrency(totalBudgetSpent) }}
+                                            <span class="text-xs font-semibold text-slate-600 dark:text-slate-400">
+                                                 ({{ totalBudgetLimit > 0 ? ((totalBudgetSpent / totalBudgetLimit) * 100).toFixed(0) : 0 }}% Used)
                                             </span>
-                                        </div>
+                                        </h4>
+                                    </div>
+                                </div>
 
-                                        <!-- Budget Numbers & Actions -->
-                                        <div class="flex items-center gap-3">
-                                            <div class="text-right text-xs">
-                                                <span class="font-bold text-slate-700 dark:text-slate-100">{{ formatCurrency(cat.spent) }}</span>
-                                                <span class="text-slate-600 font-medium"> of </span>
+                                <div v-if="expenseCategories.length === 0" class="py-12 text-center">
+                                    <div class="bg-indigo-50 dark:bg-slate-950 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                        </svg>
+                                    </div>
+                                    <p class="text-slate-700 dark:text-slate-600 font-medium">No expense categories registered yet.</p>
+                                    <p class="text-slate-600 dark:text-slate-700 text-xs mt-1">Create an expense category and set budget limits to track them.</p>
+                                </div>
+
+                                <div v-else class="space-y-6">
+                                    <div 
+                                        v-for="cat in expenseCategories" 
+                                        :key="cat.id"
+                                        class="p-4 rounded-xl border border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-900/40 hover:shadow-sm transition-shadow duration-150"
+                                    >
+                                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                                            <div class="flex items-center gap-2.5">
                                                 <span 
-                                                    @click="openBudgetModal(cat)"
-                                                    class="font-bold text-slate-700 dark:text-slate-600 hover:text-indigo-500 cursor-pointer underline decoration-dotted"
-                                                    title="Click to change budget"
-                                                    :id="'budget-limit-' + cat.id"
+                                                    class="w-3.5 h-3.5 rounded-full inline-block flex-shrink-0"
+                                                    :style="{ backgroundColor: cat.color }"
+                                                ></span>
+                                                <h4 class="font-bold text-slate-800 dark:text-slate-200">{{ cat.name }}</h4>
+                                                
+                                                <!-- Filter Ledger Button -->
+                                                <button 
+                                                    @click="filterByCategory(cat.id)"
+                                                    class="px-2 py-0.5 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 text-slate-450 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-md transition-colors text-[10px] font-bold border border-slate-200/40 dark:border-slate-800/60"
+                                                    title="Filter ledger by this category"
                                                 >
-                                                    {{ cat.budget_limit > 0 ? formatCurrency(cat.budget_limit) : 'Set Limit' }}
+                                                    Filter Ledger
+                                                </button>
+
+                                                <!-- Exceeded Alert -->
+                                                <span 
+                                                    v-if="cat.budget_limit > 0 && cat.spent > cat.budget_limit"
+                                                    class="px-2 py-0.5 bg-rose-50 dark:bg-rose-950/45 text-rose-600 dark:text-rose-400 text-[10px] font-bold rounded-full border border-rose-100 dark:border-rose-900/50 flex items-center gap-1 animate-pulse"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                                    </svg>
+                                                    Limit Exceeded
                                                 </span>
                                             </div>
-                                            <button 
-                                                @click="openBudgetModal(cat)"
-                                                class="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 hover:text-slate-700 dark:hover:text-slate-350 rounded-lg transition-colors"
-                                                title="Edit Limit"
-                                                :id="'edit-budget-btn-' + cat.id"
-                                            >
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </div>
 
-                                    <!-- Progress Bar Wrapper -->
-                                    <div v-if="cat.budget_limit > 0" class="w-full space-y-1">
-                                        <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3.5 overflow-hidden p-0.5 border border-slate-100 dark:border-slate-800">
-                                            <div 
-                                                class="h-full rounded-full transition-all duration-500 shadow-inner"
-                                                :class="{
-                                                    'bg-gradient-to-r from-emerald-400 to-emerald-500': cat.percentage_used < 70,
-                                                    'bg-gradient-to-r from-amber-400 to-amber-500': cat.percentage_used >= 70 && cat.percentage_used <= 90,
-                                                    'bg-gradient-to-r from-rose-500 to-rose-600': cat.percentage_used > 90
-                                                }"
-                                                :style="{ width: `${Math.min(cat.percentage_used, 100)}%` }"
-                                                :id="'progress-bar-' + cat.id"
-                                            ></div>
+                                            <!-- Budget Numbers & Actions -->
+                                            <div class="flex items-center gap-3">
+                                                <div class="text-right text-xs">
+                                                    <span class="font-bold text-slate-700 dark:text-slate-100">{{ formatCurrency(cat.spent) }}</span>
+                                                    <span class="text-slate-600 font-medium"> of </span>
+                                                    <span 
+                                                        @click="openBudgetModal(cat)"
+                                                        class="font-bold text-slate-700 dark:text-slate-600 hover:text-indigo-500 cursor-pointer underline decoration-dotted"
+                                                        title="Click to change budget"
+                                                        :id="'budget-limit-' + cat.id"
+                                                    >
+                                                        {{ cat.budget_limit > 0 ? formatCurrency(cat.budget_limit) : 'Set Limit' }}
+                                                    </span>
+                                                </div>
+                                                <button 
+                                                    @click="openBudgetModal(cat)"
+                                                    class="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 hover:text-slate-700 dark:hover:text-slate-350 rounded-lg transition-colors"
+                                                    title="Edit Limit"
+                                                    :id="'edit-budget-btn-' + cat.id"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                    </svg>
+                                                </button>
+                                            </div>
                                         </div>
-                                        <div class="flex justify-between text-[10px] font-bold uppercase tracking-wider text-slate-600 px-1">
-                                            <span>{{ cat.percentage_used }}% Used</span>
-                                            <span>{{ formatCurrency(Math.max(0, cat.budget_limit - cat.spent)) }} Remaining</span>
+
+                                        <!-- Progress Bar Wrapper -->
+                                        <div v-if="cat.budget_limit > 0" class="w-full space-y-1">
+                                            <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3.5 overflow-hidden p-0.5 border border-slate-100 dark:border-slate-800">
+                                                <div 
+                                                    class="h-full rounded-full transition-all duration-500 shadow-inner"
+                                                    :class="{
+                                                        'bg-gradient-to-r from-emerald-400 to-emerald-500': cat.percentage_used < 70,
+                                                        'bg-gradient-to-r from-amber-400 to-amber-500': cat.percentage_used >= 70 && cat.percentage_used <= 90,
+                                                        'bg-gradient-to-r from-rose-500 to-rose-600': cat.percentage_used > 90
+                                                    }"
+                                                    :style="{ width: `${Math.min(cat.percentage_used, 100)}%` }"
+                                                    :id="'progress-bar-' + cat.id"
+                                                ></div>
+                                            </div>
+                                            <div class="flex justify-between text-[10px] font-bold uppercase tracking-wider text-slate-600 px-1">
+                                                <span>{{ cat.percentage_used }}% Used</span>
+                                                <span>{{ formatCurrency(Math.max(0, cat.budget_limit - cat.spent)) }} Remaining</span>
+                                            </div>
+                                        </div>
+                                        <div v-else class="text-xs text-slate-600 dark:text-slate-700 italic mt-1 font-medium">
+                                            No budget limit configured. Spent: {{ formatCurrency(cat.spent) }}
                                         </div>
                                     </div>
-                                    <div v-else class="text-xs text-slate-600 dark:text-slate-700 italic mt-1 font-medium">
-                                        No budget limit configured. Spent: {{ formatCurrency(cat.spent) }}
+                                </div>
+                            </div>
+
+                            <!-- Income Targets Tab Content -->
+                            <div v-if="activeBudgetTab === 'income'" class="space-y-6">
+                                <!-- Total Income Target Summary Card -->
+                                <div v-if="totalIncomeTargetLimit > 0" class="mb-6 p-4 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100/50 dark:border-emerald-900/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                    <div class="space-y-1">
+                                        <p class="text-slate-600 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider">Total Monthly Income Target</p>
+                                        <h4 class="text-xl font-extrabold text-emerald-650 dark:text-emerald-400">
+                                            {{ formatCurrency(totalIncomeTargetLimit) }}
+                                        </h4>
+                                    </div>
+                                    <div class="sm:text-right space-y-1">
+                                        <p class="text-slate-600 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider">Total Income Earned (Budgeted)</p>
+                                        <h4 class="text-xl font-extrabold" :class="totalIncomeTargetEarned >= totalIncomeTargetLimit ? 'text-emerald-650 dark:text-emerald-400' : 'text-amber-650 dark:text-amber-500'">
+                                            {{ formatCurrency(totalIncomeTargetEarned) }}
+                                            <span class="text-xs font-semibold text-slate-600 dark:text-slate-400">
+                                                 ({{ totalIncomeTargetLimit > 0 ? ((totalIncomeTargetEarned / totalIncomeTargetLimit) * 100).toFixed(0) : 0 }}% Earned)
+                                            </span>
+                                        </h4>
+                                    </div>
+                                </div>
+
+                                <div v-if="incomeCategories.length === 0" class="py-12 text-center">
+                                    <div class="bg-indigo-50 dark:bg-slate-950 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                        </svg>
+                                    </div>
+                                    <p class="text-slate-700 dark:text-slate-600 font-medium">No income categories registered yet.</p>
+                                    <p class="text-slate-600 dark:text-slate-700 text-xs mt-1">Create an income category and set monthly targets to track them.</p>
+                                </div>
+
+                                <div v-else class="space-y-6">
+                                    <div 
+                                        v-for="cat in incomeCategories" 
+                                        :key="cat.id"
+                                        class="p-4 rounded-xl border border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-900/40 hover:shadow-sm transition-shadow duration-150"
+                                    >
+                                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                                            <div class="flex items-center gap-2.5">
+                                                <span 
+                                                    class="w-3.5 h-3.5 rounded-full inline-block flex-shrink-0"
+                                                    :style="{ backgroundColor: cat.color }"
+                                                ></span>
+                                                <h4 class="font-bold text-slate-800 dark:text-slate-200">{{ cat.name }}</h4>
+                                                
+                                                <!-- Target Reached Alert -->
+                                                <span 
+                                                    v-if="cat.budget_limit > 0 && cat.earned >= cat.budget_limit"
+                                                    class="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/45 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold rounded-full border border-emerald-100 dark:border-emerald-900/50 flex items-center gap-1"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l5-5z" clip-rule="evenodd" />
+                                                    </svg>
+                                                    Target Reached
+                                                </span>
+                                            </div>
+
+                                            <!-- Budget Numbers & Actions -->
+                                            <div class="flex items-center gap-3">
+                                                <div class="text-right text-xs">
+                                                    <span class="font-bold text-slate-700 dark:text-slate-100">{{ formatCurrency(cat.earned) }}</span>
+                                                    <span class="text-slate-600 font-medium"> of </span>
+                                                    <span 
+                                                        @click="openBudgetModal(cat)"
+                                                        class="font-bold text-slate-700 dark:text-slate-600 hover:text-indigo-500 cursor-pointer underline decoration-dotted"
+                                                        title="Click to change target"
+                                                        :id="'budget-limit-' + cat.id"
+                                                    >
+                                                        {{ cat.budget_limit > 0 ? formatCurrency(cat.budget_limit) : 'Set Target' }}
+                                                    </span>
+                                                </div>
+                                                <button 
+                                                    @click="openBudgetModal(cat)"
+                                                    class="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 hover:text-slate-700 dark:hover:text-slate-350 rounded-lg transition-colors"
+                                                    title="Edit Target"
+                                                    :id="'edit-budget-btn-' + cat.id"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Progress Bar Wrapper -->
+                                        <div v-if="cat.budget_limit > 0" class="w-full space-y-1">
+                                            <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3.5 overflow-hidden p-0.5 border border-slate-100 dark:border-slate-800">
+                                                <div 
+                                                    class="h-full rounded-full transition-all duration-500 shadow-inner"
+                                                    :class="{
+                                                        'bg-gradient-to-r from-amber-400 to-amber-500': cat.percentage_used < 50,
+                                                        'bg-gradient-to-r from-indigo-400 to-indigo-500': cat.percentage_used >= 50 && cat.percentage_used < 100,
+                                                        'bg-gradient-to-r from-emerald-500 to-emerald-600': cat.percentage_used >= 100
+                                                    }"
+                                                    :style="{ width: `${Math.min(cat.percentage_used, 100)}%` }"
+                                                    :id="'progress-bar-' + cat.id"
+                                                ></div>
+                                            </div>
+                                            <div class="flex justify-between text-[10px] font-bold uppercase tracking-wider text-slate-600 px-1">
+                                                <span>{{ cat.percentage_used }}% Earned</span>
+                                                <span v-if="cat.earned < cat.budget_limit" class="text-rose-500 font-extrabold">
+                                                    {{ formatCurrency(cat.deficit) }} Deficit
+                                                </span>
+                                                <span v-else class="text-emerald-500 font-extrabold">
+                                                    {{ formatCurrency(cat.earned - cat.budget_limit) }} Surplus
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div v-else class="text-xs text-slate-600 dark:text-slate-700 italic mt-1 font-medium">
+                                            No income target configured. Earned: {{ formatCurrency(cat.earned) }}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1340,7 +1534,7 @@ const resetLedgerFilters = () => {
 
                             <!-- Amount -->
                             <div>
-                                <label for="tx-amount" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Amount ($)</label>
+                                <label for="tx-amount" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Amount (৳)</label>
                                 <input 
                                     type="number" 
                                     step="0.01" 
@@ -1608,20 +1802,24 @@ const resetLedgerFilters = () => {
                         <div class="p-6 space-y-4">
                             <div class="text-xs font-bold text-slate-700 dark:text-slate-600 bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
                                 Category: <span class="text-slate-850 dark:text-slate-100 font-extrabold">{{ selectedCategoryForBudget?.name }}</span>
-                                <br/>
-                                Month: <span class="text-slate-850 dark:text-slate-100 font-extrabold">{{ budgetForm.month }}</span>
+                                <template v-if="selectedCategoryForBudget?.type === 'income'">
+                                    <br/>
+                                    Target Month: <span class="text-slate-850 dark:text-slate-100 font-extrabold">{{ budgetForm.month }}</span>
+                                </template>
                             </div>
 
                             <!-- Budget Limit Amount -->
                             <div>
-                                <label for="budget-limit" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Monthly Budget Limit ($)</label>
+                                <label for="budget-limit" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                                    {{ selectedCategoryForBudget?.type === 'income' ? 'Monthly Income Target (৳)' : 'Monthly Budget Limit (৳)' }}
+                                </label>
                                 <input 
                                     type="number" 
                                     step="0.01" 
                                     id="budget-limit" 
                                     v-model="budgetForm.amount"
                                     class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                                    placeholder="Enter maximum spend..."
+                                    :placeholder="selectedCategoryForBudget?.type === 'income' ? 'Enter target earned amount...' : 'Enter maximum spend...'"
                                     required
                                     min="0"
                                 />

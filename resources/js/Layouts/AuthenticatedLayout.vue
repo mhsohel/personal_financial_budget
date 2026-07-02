@@ -118,10 +118,24 @@ onMounted(() => {
             <!-- Logo Section -->
             <div class="flex h-16 shrink-0 items-center border-b border-slate-800 px-6 gap-3">
                 <Link :href="route('dashboard')" class="flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-400 shrink-0" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24">
+                        <defs>
+                            <linearGradient id="sideVaultGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#818CF8" />
+                                <stop offset="50%" stop-color="#C084FC" />
+                                <stop offset="100%" stop-color="#FB7185" />
+                            </linearGradient>
+                            <linearGradient id="sideDialGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#34D399" />
+                                <stop offset="100%" stop-color="#60A5FA" />
+                            </linearGradient>
+                        </defs>
+                        <rect x="3" y="4" width="18" height="16" rx="3.5" stroke="url(#sideVaultGrad)" stroke-width="2.5" />
+                        <circle cx="12" cy="12" r="3.8" stroke="url(#sideDialGrad)" stroke-width="1.8" />
+                        <circle cx="12" cy="12" r="1.2" fill="url(#sideVaultGrad)" />
+                        <path d="M12 6v1M12 17v1M6 12h1M17 12h1" stroke="url(#sideDialGrad)" stroke-width="1.2" stroke-linecap="round" />
                     </svg>
-                    <span class="text-lg font-black text-white tracking-tight">FinFlow</span>
+                    <span class="text-lg font-black text-white tracking-tight">CashBox</span>
                 </Link>
             </div>
 
@@ -143,6 +157,74 @@ onMounted(() => {
                     <span>Dashboard</span>
                 </Link>
 
+
+                <!-- Budget Targets Link -->
+                <Link
+                    v-if="hasModulePermission('budgets')"
+                    :href="route('budgets.index')"
+                    :class="[
+                        'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all duration-150',
+                        route().current('budgets.index')
+                            ? 'bg-indigo-650 text-white shadow-md shadow-indigo-500/10'
+                            : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                    ]"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                    </svg>
+                    <span>Budget Targets</span>
+                </Link>
+
+                <!-- My Accounts Link -->
+                <Link
+                    :href="route('accounts.index')"
+                    :class="[
+                        'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all duration-150',
+                        route().current('accounts.index')
+                            ? 'bg-indigo-650 text-white shadow-md shadow-indigo-500/10'
+                            : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                    ]"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                    </svg>
+                    <span>My Accounts</span>
+                </Link>
+
+                <!-- Transactions Link -->
+                <Link
+                    v-if="hasModulePermission('ledger')"
+                    :href="route('transactions.index')"
+                    :class="[
+                        'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all duration-150',
+                        route().current('transactions.index')
+                            ? 'bg-indigo-650 text-white shadow-md shadow-indigo-500/10'
+                            : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                    ]"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                    <span>Transactions</span>
+                </Link>
+
+                <!-- Categories Link -->
+                <Link
+                    v-if="hasModulePermission('ledger')"
+                    :href="route('categories.index')"
+                    :class="[
+                        'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all duration-150',
+                        route().current('categories.index')
+                            ? 'bg-indigo-650 text-white shadow-md shadow-indigo-500/10'
+                            : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                    ]"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>Categories</span>
+                </Link>
+
                 <!-- Reports Link -->
                 <Link
                     v-if="hasModulePermission('ledger')"
@@ -158,6 +240,23 @@ onMounted(() => {
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                     </svg>
                     <span>Reports & Projections</span>
+                </Link>
+
+                <!-- Monthly Report Link -->
+                <Link
+                    v-if="hasModulePermission('ledger')"
+                    :href="route('reports.monthly')"
+                    :class="[
+                        'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all duration-150',
+                        route().current('reports.monthly')
+                            ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/10'
+                            : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                    ]"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>Monthly Report</span>
                 </Link>
 
                 <!-- Forecast Link -->
@@ -295,10 +394,24 @@ onMounted(() => {
 
                     <!-- Mobile Brand Logo/Title -->
                     <div class="flex items-center gap-2 lg:hidden">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-600 dark:text-indigo-400 shrink-0" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24">
+                            <defs>
+                                <linearGradient id="mobVaultGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#818CF8" />
+                                    <stop offset="50%" stop-color="#C084FC" />
+                                    <stop offset="100%" stop-color="#FB7185" />
+                                </linearGradient>
+                                <linearGradient id="mobDialGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#34D399" />
+                                    <stop offset="100%" stop-color="#60A5FA" />
+                                </linearGradient>
+                            </defs>
+                            <rect x="3" y="4" width="18" height="16" rx="3.5" stroke="url(#mobVaultGrad)" stroke-width="2.5" />
+                            <circle cx="12" cy="12" r="3.8" stroke="url(#mobDialGrad)" stroke-width="1.8" />
+                            <circle cx="12" cy="12" r="1.2" fill="url(#mobVaultGrad)" />
+                            <path d="M12 6v1M12 17v1M6 12h1M17 12h1" stroke="url(#mobDialGrad)" stroke-width="1.2" stroke-linecap="round" />
                         </svg>
-                        <span class="text-base font-black text-slate-900 dark:text-white tracking-tight">FinFlow</span>
+                        <span class="text-base font-black text-slate-900 dark:text-white tracking-tight">Cashbox</span>
                     </div>
                 </div>
 
@@ -419,13 +532,13 @@ onMounted(() => {
                 <footer class="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-4 px-6 md:px-8 mt-8">
                     <div class="mx-auto max-w-7xl flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400">
                         <div class="flex items-center gap-1.5 font-semibold">
-                            <span class="font-extrabold text-indigo-600 dark:text-indigo-400">FinFlow</span>
+                            <span class="font-extrabold text-indigo-600 dark:text-indigo-400">CashBox</span>
                             <span>&copy; 2026. All rights reserved.</span>
                         </div>
                         <div class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[10px] text-slate-400 dark:text-slate-500">
                             <span>Developed by: <strong class="text-slate-650 dark:text-slate-350">PRANTIK-SOFT</strong></span>
                             <span class="hidden sm:inline">|</span>
-                            <span>Version: <strong class="text-slate-650 dark:text-slate-350">1.1.0</strong></span>
+                            <span>Version: <strong class="text-slate-650 dark:text-slate-350">1.2.0</strong></span>
                         </div>
                     </div>
                 </footer>

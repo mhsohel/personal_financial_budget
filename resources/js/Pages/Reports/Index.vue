@@ -16,6 +16,18 @@ const props = defineProps({
         type: Array,
         required: true,
     },
+    income_budget_report: {
+        type: Array,
+        required: true,
+    },
+    total_expense_budget: {
+        type: Number,
+        required: true,
+    },
+    total_savings_target: {
+        type: Number,
+        required: true,
+    },
     averages: {
         type: Object,
         required: true,
@@ -28,10 +40,12 @@ const props = defineProps({
 
 // Format Currency
 const formatCurrency = (value) => {
-    return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-    }).format(value);
+    const val = parseFloat(value) || 0;
+    const formatted = new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(Math.abs(val));
+    return (val < 0 ? '-' : '') + '৳' + formatted;
 };
 
 // SVG Graph Calculations (Income vs Expense)
@@ -105,6 +119,15 @@ const savingsLinePath = computed(() => {
 // Total category expenses
 const totalCategoryExpenses = computed(() => {
     return props.category_expenses.reduce((sum, cat) => sum + cat.total, 0);
+});
+
+const totalIncomeTargetSummary = computed(() => {
+    return props.income_budget_report.reduce((totals, cat) => {
+        totals.limit += cat.limit || 0;
+        totals.earned += cat.earned || 0;
+        totals.deficit += cat.deficit || 0;
+        return totals;
+    }, { limit: 0, earned: 0, deficit: 0 });
 });
 
 // Financial Health logic
@@ -541,8 +564,109 @@ const totalAccountsSummary = computed(() => {
                     </div>
                 </div>
 
+                <!-- Section: Income Target & Deficit Report -->
+                <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 p-6">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M12 14a2 2 0 110-4h4" />
+                                </svg>
+                                Monthly Income Target & Deficit Report
+                            </h3>
+                            <p class="text-xs text-slate-600 dark:text-slate-700 font-medium">
+                                Target versus actual income earned and remaining deficits/surpluses for the current month.
+                            </p>
+                        </div>
+                        <div class="flex flex-wrap gap-4">
+                            <div class="bg-slate-50 dark:bg-slate-950 px-4 py-2.5 rounded-xl border border-slate-100 dark:border-slate-800/80 text-right min-w-[140px]">
+                                <span class="text-[9px] text-slate-600 dark:text-slate-600 font-bold uppercase tracking-wider block">Total Expense Budget</span>
+                                <span class="text-sm font-extrabold text-slate-800 dark:text-slate-200">{{ formatCurrency(total_expense_budget) }}</span>
+                            </div>
+                            <div class="bg-slate-50 dark:bg-slate-950 px-4 py-2.5 rounded-xl border border-slate-100 dark:border-slate-800/80 text-right min-w-[140px]">
+                                <span class="text-[9px] text-slate-600 dark:text-slate-600 font-bold uppercase tracking-wider block">Savings Target (Current Month Only)</span>
+                                <span class="text-sm font-extrabold" :class="total_savings_target >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-450'">
+                                    {{ total_savings_target >= 0 ? '+' : '' }}{{ formatCurrency(total_savings_target) }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-if="income_budget_report.length === 0" class="py-12 text-center text-slate-600 dark:text-slate-700 italic font-semibold text-sm">
+                        No monthly income targets configured. Set income targets on the dashboard to generate this report.
+                    </div>
+
+                    <div v-else class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-100 dark:border-slate-800 text-xs font-bold uppercase tracking-wider text-slate-405">
+                                    <th class="py-3 px-4">Category</th>
+                                    <th class="py-3 px-4 text-right">Target Income</th>
+                                    <th class="py-3 px-4 text-right">Actual Earned</th>
+                                    <th class="py-3 px-4 text-right">Deficit Amount</th>
+                                    <th class="py-3 px-4 text-right">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 dark:divide-slate-700/60 text-sm">
+                                <tr 
+                                    v-for="cat in income_budget_report" 
+                                    :key="cat.id"
+                                    class="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors"
+                                >
+                                    <td class="py-3.5 px-4 font-bold text-slate-850 dark:text-slate-100 whitespace-nowrap">
+                                        <div class="flex items-center gap-2">
+                                            <span 
+                                                class="w-3.5 h-3.5 rounded-full inline-block flex-shrink-0"
+                                                :style="{ backgroundColor: cat.color }"
+                                            ></span>
+                                            {{ cat.name }}
+                                        </div>
+                                    </td>
+                                    <td class="py-3.5 px-4 text-right text-slate-800 dark:text-slate-200 font-bold whitespace-nowrap">
+                                        {{ formatCurrency(cat.limit) }}
+                                    </td>
+                                    <td class="py-3.5 px-4 text-right text-slate-800 dark:text-slate-200 font-bold whitespace-nowrap">
+                                        {{ formatCurrency(cat.earned) }}
+                                    </td>
+                                    <td class="py-3.5 px-4 text-right font-extrabold whitespace-nowrap" :class="cat.deficit > 0 ? 'text-rose-600 dark:text-rose-450' : 'text-emerald-600 dark:text-emerald-400'">
+                                        {{ cat.deficit > 0 ? formatCurrency(cat.deficit) : '-' }}
+                                    </td>
+                                    <td class="py-3.5 px-4 text-right whitespace-nowrap">
+                                        <span 
+                                            class="px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase"
+                                            :class="cat.status === 'Met' ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-650 dark:text-emerald-400' : 'bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-450'"
+                                        >
+                                        </span>
+                                    </td>
+                                </tr>
+                                <!-- Totals Row -->
+                                <tr class="bg-slate-50/50 dark:bg-slate-900/50 font-black border-t-2 border-slate-200 dark:border-slate-800">
+                                    <td class="py-4 px-4 text-slate-850 dark:text-slate-100 whitespace-nowrap">Total Target Summary</td>
+                                    <td class="py-4 px-4 text-right text-slate-800 dark:text-slate-200 font-bold whitespace-nowrap">
+                                        {{ formatCurrency(totalIncomeTargetSummary.limit) }}
+                                    </td>
+                                    <td class="py-4 px-4 text-right text-slate-800 dark:text-slate-200 font-bold whitespace-nowrap">
+                                        {{ formatCurrency(totalIncomeTargetSummary.earned) }}
+                                    </td>
+                                    <td class="py-4 px-4 text-right font-extrabold whitespace-nowrap text-rose-600 dark:text-rose-450">
+                                        {{ totalIncomeTargetSummary.deficit > 0 ? formatCurrency(totalIncomeTargetSummary.deficit) : '-' }}
+                                    </td>
+                                    <td class="py-4 px-4 text-right whitespace-nowrap">
+                                        <span 
+                                            class="px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase"
+                                            :class="totalIncomeTargetSummary.earned >= totalIncomeTargetSummary.limit ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-650 dark:text-emerald-400' : 'bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-450'"
+                                        >
+                                            {{ totalIncomeTargetSummary.earned >= totalIncomeTargetSummary.limit ? 'Met' : 'Deficit' }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
                 <!-- Lower Section: Category Breakdown -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
                     
                     <!-- Category Breakdown chart segment -->
                     <div class="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 p-6">

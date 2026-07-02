@@ -24,10 +24,12 @@ const props = defineProps({
 
 // Format Currency
 const formatCurrency = (value) => {
-    return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-    }).format(value);
+    const val = parseFloat(value) || 0;
+    const formatted = new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(Math.abs(val));
+    return (val < 0 ? '-' : '') + '৳' + formatted;
 };
 
 // Modal State
@@ -162,10 +164,10 @@ const filteredSchedules = computed(() => {
                         @click="openAddModal"
                         class="px-4 py-2.5 bg-indigo-600 dark:bg-indigo-650 hover:bg-indigo-700 dark:hover:bg-indigo-600 text-white font-bold text-xs rounded-xl shadow-md transition duration-150 flex items-center gap-1.5"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
                         </svg>
-                        New Recurring Item
+                        Add New 
                     </button>
                 </div>
             </div>

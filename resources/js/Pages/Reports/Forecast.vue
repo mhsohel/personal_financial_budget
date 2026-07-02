@@ -44,10 +44,26 @@ const hoveredIndex = ref(null);
 
 // Formatter helper
 const formatCurrency = (value) => {
-    return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-    }).format(value);
+    const val = parseFloat(value) || 0;
+    const formatted = new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(Math.abs(val));
+    return (val < 0 ? '-' : '') + '৳' + formatted;
+};
+
+const isNonCompliant = (b) => {
+    if (b.category_type === 'income') {
+        return b.avg_spend < b.limit;
+    }
+    return b.avg_spend > b.limit;
+};
+
+const complianceStatus = (b) => {
+    if (b.category_type === 'income') {
+        return b.avg_spend < b.limit ? 'Deficit' : 'Target Met';
+    }
+    return b.avg_spend > b.limit ? 'Over Limit' : 'Compliant';
 };
 
 // Calculations for the next 12 months
@@ -251,8 +267,13 @@ const financialHealthScore = computed(() => {
     else if (runway > 0) score += (runway / 6) * 25;
 
     // Over budget factor
-    const overBudgets = props.budgets.filter(b => b.avg_spend > b.limit).length;
-    score -= overBudgets * 5;
+    const nonCompliantBudgets = props.budgets.filter(b => {
+        if (b.category_type === 'income') {
+            return b.avg_spend < b.limit;
+        }
+        return b.avg_spend > b.limit;
+    }).length;
+    score -= nonCompliantBudgets * 5;
 
     return Math.max(0, Math.min(100, Math.round(score)));
 });
@@ -776,9 +797,9 @@ const healthScoreColor = computed(() => {
                                             </span>
                                             <span 
                                                 class="px-2 py-0.5 rounded-md text-[9px] font-extrabold uppercase"
-                                                :class="b.avg_spend > b.limit ? 'bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400' : 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-650 dark:text-emerald-400'"
+                                                :class="isNonCompliant(b) ? 'bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400' : 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-650 dark:text-emerald-400'"
                                             >
-                                                {{ b.avg_spend > b.limit ? 'Over Limit' : 'Compliant' }}
+                                                {{ complianceStatus(b) }}
                                             </span>
                                         </div>
 
@@ -789,13 +810,13 @@ const healthScoreColor = computed(() => {
                                                     class="h-full rounded-full transition-all"
                                                     :style="{ 
                                                         width: `${Math.min(100, (b.avg_spend / b.limit) * 100)}%`,
-                                                        backgroundColor: b.avg_spend > b.limit ? '#F43F5E' : '#10B981'
+                                                        backgroundColor: isNonCompliant(b) ? '#F43F5E' : '#10B981'
                                                     }"
                                                 ></div>
                                             </div>
                                             <div class="flex justify-between text-[9px] font-semibold text-slate-600">
-                                                <span>Avg Spent: {{ formatCurrency(b.avg_spend) }}/mo</span>
-                                                <span>Budget: {{ formatCurrency(b.limit) }}</span>
+                                                <span>{{ b.category_type === 'income' ? 'Avg Earned' : 'Avg Spent' }}: {{ formatCurrency(b.avg_spend) }}/mo</span>
+                                                <span>{{ b.category_type === 'income' ? 'Target' : 'Limit' }}: {{ formatCurrency(b.limit) }}</span>
                                             </div>
                                         </div>
                                     </div>

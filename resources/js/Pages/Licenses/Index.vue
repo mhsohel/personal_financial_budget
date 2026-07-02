@@ -28,10 +28,12 @@ const props = defineProps({
 
 // Format Currency
 const formatCurrency = (value) => {
-    return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-    }).format(value);
+    const val = parseFloat(value) || 0;
+    const formatted = new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(Math.abs(val));
+    return (val < 0 ? '-' : '') + '৳' + formatted;
 };
 
 // Modals State
@@ -594,7 +596,7 @@ const filteredPayments = computed(() => {
 
                             <!-- Amount -->
                             <div>
-                                <label for="license-amount" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">License Fee ($)</label>
+                                <label for="license-amount" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">License Fee (৳)</label>
                                 <input 
                                     type="number" 
                                     step="0.01" 
@@ -722,7 +724,7 @@ const filteredPayments = computed(() => {
                         <div class="p-6 space-y-4">
                             <!-- Amount -->
                             <div>
-                                <label for="payment-amount" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Amount Received ($)</label>
+                                <label for="payment-amount" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Amount Received (৳)</label>
                                 <input 
                                     type="number" 
                                     step="0.01" 

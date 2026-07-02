@@ -113,10 +113,56 @@ class ReportController extends Controller
             ];
         });
 
+        // 5. Income Budget & Deficit Report for the current month
+        $currentMonth = Carbon::now()->format('Y-m');
+        $startOfMonth = Carbon::now()->startOfMonth();
+        $endOfMonth = Carbon::now()->endOfMonth();
+
+        $incomeBudgetReport = $user->categories()
+            ->where('type', 'income')
+            ->get()
+            ->map(function (Category $category) use ($currentMonth, $startOfMonth, $endOfMonth) {
+                $budget = $category->budgets()->where('month', $currentMonth)->first();
+                $limit = $budget ? (float) $budget->amount : 0.0;
+
+                $earned = $category->transactions()
+                    ->where('type', 'income')
+                    ->whereBetween('transaction_date', [$startOfMonth, $endOfMonth])
+                    ->sum('amount');
+
+                $deficit = $limit > 0 ? max(0.0, $limit - $earned) : 0.0;
+
+                return [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'color' => $category->color ?? '#10B981',
+                    'limit' => $limit,
+                    'earned' => (float) $earned,
+                    'deficit' => $deficit,
+                    'status' => $limit > 0 ? ($earned >= $limit ? 'Met' : 'Deficit') : 'No Target',
+                ];
+            })
+            ->filter(fn($item) => $item['limit'] > 0)
+            ->values();
+
+        // Total Expense Budget (perpetual, active limit of all expense categories)
+        $totalExpenseBudget = (float) $user->budgets()->whereHas('category', function ($query) {
+            $query->where('type', 'expense');
+        })->sum('amount');
+
+        // Total Income Target (sum of current month's income category targets)
+        $totalIncomeTarget = (float) $incomeBudgetReport->sum('limit');
+
+        // Total Savings Target = Total Income Target - Total Expense Budget
+        $totalSavingsTarget = (float) ($totalIncomeTarget - $totalExpenseBudget);
+
         return Inertia::render('Reports/Index', [
             'trends' => $trends,
             'category_expenses' => $categoryExpenses,
             'accounts_report' => $accountsReport,
+            'income_budget_report' => $incomeBudgetReport,
+            'total_expense_budget' => $totalExpenseBudget,
+            'total_savings_target' => $totalSavingsTarget,
             'averages' => [
                 'income' => (float) $avgIncome,
                 'expense' => (float) $avgExpense,
@@ -204,23 +250,22 @@ class ReportController extends Controller
         $budgets = $user->budgets()
             ->with('category')
             ->get()
-            ->groupBy('category_id')
-            ->map(function ($group) use ($threeMonthsAgo, $todayEnd) {
-                $budget = $group->sortByDesc('month')->first();
+            ->map(function ($budget) use ($threeMonthsAgo, $todayEnd) {
                 $category = $budget->category;
                 if (!$category) return null;
 
-                $threeMonthSpend = $category->transactions()
-                    ->where('type', 'expense')
+                $threeMonthTotal = $category->transactions()
+                    ->where('type', $category->type)
                     ->whereBetween('transaction_date', [$threeMonthsAgo, $todayEnd])
                     ->sum('amount');
 
                 return [
                     'category_id' => $category->id,
                     'category_name' => $category->name,
+                    'category_type' => $category->type,
                     'color' => $category->color ?? '#3B82F6',
                     'limit' => (float) $budget->amount,
-                    'avg_spend' => round($threeMonthSpend / 3, 2),
+                    'avg_spend' => round($threeMonthTotal / 3, 2),
                 ];
             })
             ->filter()
@@ -250,6 +295,408 @@ class ReportController extends Controller
             'loans' => $loans,
             'budgets' => $budgets,
             'timeline_months' => $timelineMonths,
+        ]);
+    }
+
+    public function monthly(Request $request): Response
+    {
+        $user = Auth::user();
+        $month = $request->input('month', Carbon::now()->format('Y-m'));
+
+        $startDate = Carbon::parse($month . '-01')->startOfMonth();
+        $endDate = Carbon::parse($month . '-01')->endOfMonth();
+
+        // 1. Inflow, Outflow, Net, Savings Rate for this month
+        $inflow = (float) $user->transactions()
+            ->where('type', 'income')
+            ->whereBetween('transaction_date', [$startDate, $endDate])
+            ->sum('amount');
+
+        $outflow = (float) $user->transactions()
+            ->where('type', 'expense')
+            ->whereBetween('transaction_date', [$startDate, $endDate])
+            ->sum('amount');
+
+        $savings = $inflow - $outflow;
+        $savingsRate = $inflow > 0 ? round(($savings / $inflow) * 100, 2) : 0.0;
+
+        // 2. Expense Budgets Breakdown for this month (using perpetual budget or actual spent)
+        $expenseReport = $user->categories()
+            ->where('type', 'expense')
+            ->get()
+            ->map(function (Category $category) use ($startDate, $endDate) {
+                $spent = (float) $category->transactions()
+                    ->where('type', 'expense')
+                    ->whereBetween('transaction_date', [$startDate, $endDate])
+                    ->sum('amount');
+
+                $budget = $category->budgets()->whereNull('month')->first();
+                $limit = $budget ? (float) $budget->amount : 0.0;
+                $percentage = $limit > 0 ? round(($spent / $limit) * 100, 2) : 0.0;
+
+                return [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'color' => $category->color ?? '#3B82F6',
+                    'spent' => $spent,
+                    'limit' => $limit,
+                    'percentage' => $percentage,
+                    'status' => $limit > 0 ? ($spent > $limit ? 'Over Limit' : 'Compliant') : 'No Budget',
+                ];
+            });
+
+        // 3. Income Targets Breakdown for this month
+        $incomeReport = $user->categories()
+            ->where('type', 'income')
+            ->get()
+            ->map(function (Category $category) use ($month, $startDate, $endDate) {
+                $earned = (float) $category->transactions()
+                    ->where('type', 'income')
+                    ->whereBetween('transaction_date', [$startDate, $endDate])
+                    ->sum('amount');
+
+                $budget = $category->budgets()->where('month', $month)->first();
+                $limit = $budget ? (float) $budget->amount : 0.0;
+                $percentage = $limit > 0 ? round(($earned / $limit) * 100, 2) : 0.0;
+                $deficit = $limit > 0 ? max(0.0, $limit - $earned) : 0.0;
+
+                return [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'color' => $category->color ?? '#10B981',
+                    'earned' => $earned,
+                    'limit' => $limit,
+                    'percentage' => $percentage,
+                    'deficit' => $deficit,
+                    'status' => $limit > 0 ? ($earned >= $limit ? 'Met' : 'Deficit') : 'No Target',
+                ];
+            });
+
+        // 4. Accounts Performance statement for this month
+        $accountsReport = $user->accounts()
+            ->get()
+            ->map(function ($account) use ($startDate, $endDate) {
+                $inflows = $account->transactions()
+                    ->where('type', 'income')
+                    ->whereBetween('transaction_date', [$startDate, $endDate])
+                    ->sum('amount');
+
+                $outflows = $account->transactions()
+                    ->where('type', 'expense')
+                    ->whereBetween('transaction_date', [$startDate, $endDate])
+                    ->sum('amount');
+
+                return [
+                    'id' => $account->id,
+                    'name' => $account->name,
+                    'color' => $account->color ?? '#3B82F6',
+                    'type' => $account->type,
+                    'inflows' => (float) $inflows,
+                    'outflows' => (float) $outflows,
+                    'net_flow' => (float) ($inflows - $outflows),
+                ];
+            });
+
+        // 5. Transaction Ledger (list of all transactions in this month)
+        $transactions = $user->transactions()
+            ->with(['category', 'account'])
+            ->whereBetween('transaction_date', [$startDate, $endDate])
+            ->orderBy('transaction_date', 'desc')
+            ->get()
+            ->map(function ($t) {
+                return [
+                    'id' => $t->id,
+                    'amount' => (float) $t->amount,
+                    'type' => $t->type,
+                    'description' => $t->description,
+                    'transaction_date' => $t->transaction_date->format('Y-m-d'),
+                    'category_name' => $t->category?->name ?? 'Uncategorized',
+                    'category_color' => $t->category?->color ?? '#64748B',
+                    'account_name' => $t->account?->name ?? 'N/A',
+                ];
+            });
+
+        return Inertia::render('Reports/Monthly', [
+            'month' => $month,
+            'summary' => [
+                'inflow' => $inflow,
+                'outflow' => $outflow,
+                'savings' => $savings,
+                'savings_rate' => $savingsRate,
+            ],
+            'expense_report' => $expenseReport,
+            'income_report' => $incomeReport,
+            'accounts_report' => $accountsReport,
+            'transactions' => $transactions,
+        ]);
+    }
+
+    public function finance(Request $request): Response
+    {
+        $user = Auth::user();
+        $startDate = Carbon::now()->startOfMonth();
+        $endDate = Carbon::now()->endOfMonth();
+
+        $lastMonthStart = Carbon::now()->subMonth()->startOfMonth();
+        $lastMonthEnd = Carbon::now()->subMonth()->endOfMonth();
+
+        // 1. Current Balance across all accounts
+        $accounts = $user->accounts()->get()->map(function ($account) {
+            $inflows = (float) $account->transactions()->where('type', 'income')->sum('amount');
+            $outflows = (float) $account->transactions()->where('type', 'expense')->sum('amount');
+            $currentBalance = (float) ($account->initial_balance + $inflows - $outflows);
+            
+            return [
+                'id' => $account->id,
+                'name' => $account->name,
+                'type' => $account->type ?? 'Savings',
+                'color' => $account->color ?? '#6366f1',
+                'balance' => $currentBalance,
+                'current_balance' => $currentBalance,
+                'initial_balance' => (float) $account->initial_balance,
+                'last4' => str_pad($account->id, 4, '0', STR_PAD_LEFT),
+            ];
+        });
+
+        $totalBalance = (float) (
+            $user->accounts()->sum('initial_balance') + 
+            $user->transactions()->where('type', 'income')->sum('amount') - 
+            $user->transactions()->where('type', 'expense')->sum('amount')
+        );
+
+        // 2. Inflow / Outflow / Savings for current month
+        $inflow = (float) $user->transactions()
+            ->where('type', 'income')
+            ->whereBetween('transaction_date', [$startDate, $endDate])
+            ->sum('amount');
+
+        $outflow = (float) $user->transactions()
+            ->where('type', 'expense')
+            ->whereBetween('transaction_date', [$startDate, $endDate])
+            ->sum('amount');
+
+        $savings = $inflow - $outflow;
+        $savingsRate = $inflow > 0 ? round(($savings / $inflow) * 100, 1) : 0.0;
+
+        // 3. Last month metrics for MoM percentage comparisons
+        $lastInflow = (float) $user->transactions()
+            ->where('type', 'income')
+            ->whereBetween('transaction_date', [$lastMonthStart, $lastMonthEnd])
+            ->sum('amount');
+
+        $lastOutflow = (float) $user->transactions()
+            ->where('type', 'expense')
+            ->whereBetween('transaction_date', [$lastMonthStart, $lastMonthEnd])
+            ->sum('amount');
+
+        // MoM changes
+        $incomeChangePct = $lastInflow > 0 ? round((($inflow - $lastInflow) / $lastInflow) * 100, 1) : 0.0;
+        $spentChangePct = $lastOutflow > 0 ? round((($outflow - $lastOutflow) / $lastOutflow) * 100, 1) : 0.0;
+
+        // 4. Sparkline balance history (last 15 days cumulative)
+        $sparklineData = [];
+        $runningBalance = $totalBalance;
+        
+        for ($i = 0; $i < 15; $i++) {
+            $day = Carbon::now()->subDays($i);
+            $dayStart = $day->copy()->startOfDay();
+            $dayEnd = $day->copy()->endOfDay();
+
+            $dayInflow = (float) $user->transactions()
+                ->where('type', 'income')
+                ->whereBetween('transaction_date', [$dayStart, $dayEnd])
+                ->sum('amount');
+            $dayOutflow = (float) $user->transactions()
+                ->where('type', 'expense')
+                ->whereBetween('transaction_date', [$dayStart, $dayEnd])
+                ->sum('amount');
+            
+            $dayNet = $dayInflow - $dayOutflow;
+            
+            $sparklineData[] = [
+                'date' => $day->format('M d'),
+                'balance' => $runningBalance
+            ];
+
+            $runningBalance -= $dayNet;
+        }
+        $sparklineData = array_reverse($sparklineData);
+
+        // 5. Cashflow trends (last 12 months)
+        $cashflowTrends = [];
+        for ($i = 11; $i >= 0; $i--) {
+            $monthDate = Carbon::now()->subMonths($i);
+            $monthLabel = $monthDate->format('M Y');
+            
+            $mStart = $monthDate->copy()->startOfMonth();
+            $mEnd = $monthDate->copy()->endOfMonth();
+            
+            $mIncome = (float) $user->transactions()
+                ->where('type', 'income')
+                ->whereBetween('transaction_date', [$mStart, $mEnd])
+                ->sum('amount');
+                
+            $mExpense = (float) $user->transactions()
+                ->where('type', 'expense')
+                ->whereBetween('transaction_date', [$mStart, $mEnd])
+                ->sum('amount');
+
+            $cashflowTrends[] = [
+                'month' => $monthLabel,
+                'income' => $mIncome,
+                'expense' => $mExpense
+            ];
+        }
+
+        // 6. Category spending breakdown for Doughnut chart
+        $spendingCategories = $user->categories()
+            ->where('type', 'expense')
+            ->get()
+            ->map(function ($category) use ($startDate, $endDate) {
+                $spent = (float) $category->transactions()
+                    ->where('type', 'expense')
+                    ->whereBetween('transaction_date', [$startDate, $endDate])
+                    ->sum('amount');
+
+                return [
+                    'name' => $category->name,
+                    'color' => $category->color ?? '#6366f1',
+                    'value' => $spent
+                ];
+            })
+            ->filter(fn($c) => $c['value'] > 0)
+            ->values();
+
+        // 7. Mock contacts for Quick Send
+        $mockContacts = [
+            ['id' => 1, 'name' => 'Musharof Chy', 'initials' => 'MC', 'color' => '#3b82f6'],
+            ['id' => 2, 'name' => 'Naimur Rahman', 'initials' => 'NR', 'color' => '#10b981'],
+            ['id' => 3, 'name' => 'Shafiqul Islam', 'initials' => 'SI', 'color' => '#f59e0b'],
+            ['id' => 4, 'name' => 'Liton Das', 'initials' => 'LD', 'color' => '#ef4444'],
+            ['id' => 5, 'name' => 'Sakib Al Hasan', 'initials' => 'SH', 'color' => '#ec4899'],
+            ['id' => 6, 'name' => 'Tamim Iqbal', 'initials' => 'TI', 'color' => '#8b5cf6'],
+            ['id' => 7, 'name' => 'Mustafiz Rahman', 'initials' => 'MR', 'color' => '#06b6d4'],
+            ['id' => 8, 'name' => 'Taskin Ahmed', 'initials' => 'TA', 'color' => '#14b8a6'],
+        ];
+
+        // 8. Recent transactions (Current month's transactions)
+        $recentTransactions = $user->transactions()
+            ->with(['category', 'account'])
+            ->whereBetween('transaction_date', [$startDate, $endDate])
+            ->orderBy('transaction_date', 'desc')
+            ->orderBy('id', 'desc')
+            ->get()
+            ->map(function ($t) {
+                return [
+                    'id' => $t->id,
+                    'description' => $t->description ?? 'Transaction',
+                    'amount' => (float) $t->amount,
+                    'type' => $t->type,
+                    'date' => $t->transaction_date ? $t->transaction_date->format('M d, Y') : null,
+                    'category_name' => $t->category ? $t->category->name : 'Uncategorized',
+                    'category_color' => $t->category ? $t->category->color : '#94a3b8',
+                    'account_name' => $t->account ? $t->account->name : 'N/A',
+                ];
+            });
+
+        // 9. Recurring reminders
+        $reminders = $user->recurringSchedules()
+            ->with(['account', 'category', 'loan'])
+            ->where('is_active', true)
+            ->where('next_due_date', '<=', Carbon::today()->addDays(7))
+            ->orderBy('next_due_date', 'asc')
+            ->get()
+            ->map(function ($schedule) {
+                return [
+                    'id' => $schedule->id,
+                    'type' => $schedule->type,
+                    'frequency' => $schedule->frequency,
+                    'next_due_date' => $schedule->next_due_date->format('Y-m-d'),
+                    'amount' => (float) $schedule->amount,
+                    'description' => $schedule->description,
+                    'account' => $schedule->account ? [
+                        'id' => $schedule->account->id,
+                        'name' => $schedule->account->name,
+                        'color' => $schedule->account->color,
+                    ] : null,
+                    'category' => $schedule->category ? [
+                        'id' => $schedule->category->id,
+                        'name' => $schedule->category->name,
+                        'color' => $schedule->category->color,
+                    ] : null,
+                    'loan' => $schedule->loan ? [
+                        'id' => $schedule->loan->id,
+                        'person_name' => $schedule->loan->person_name,
+                        'type' => $schedule->loan->type,
+                    ] : null,
+                    'loan_type' => $schedule->loan_type,
+                    'person_name' => $schedule->person_name,
+                    'is_overdue' => $schedule->next_due_date->lt(Carbon::today()),
+                ];
+            });
+
+        $month = Carbon::now()->format('Y-m');
+        $categoriesData = $user->categories()
+            ->get()
+            ->map(function ($category) use ($startDate, $endDate, $month) {
+                $spent = (float) $category->transactions()
+                    ->where('type', 'expense')
+                    ->whereBetween('transaction_date', [$startDate, $endDate])
+                    ->sum('amount');
+
+                $earned = (float) $category->transactions()
+                    ->where('type', 'income')
+                    ->whereBetween('transaction_date', [$startDate, $endDate])
+                    ->sum('amount');
+
+                if ($category->type === 'expense') {
+                    $budget = $category->budgets()->whereNull('month')->first();
+                    $limit = $budget ? (float) $budget->amount : 0.0;
+                    $percentage = $limit > 0 ? round(($spent / $limit) * 100, 2) : 0.0;
+                    $deficit = 0.0;
+                } else {
+                    $budget = $category->budgets()->where('month', $month)->first();
+                    $limit = $budget ? (float) $budget->amount : 0.0;
+                    $percentage = $limit > 0 ? round(($earned / $limit) * 100, 2) : 0.0;
+                    $deficit = $limit > 0 ? max(0.0, $limit - $earned) : 0.0;
+                }
+
+                return [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'type' => $category->type,
+                    'color' => $category->color ?? '#3B82F6',
+                    'spent' => $spent,
+                    'earned' => $earned,
+                    'budget_limit' => $limit,
+                    'percentage_used' => $percentage,
+                    'deficit' => $deficit,
+                ];
+            });
+
+        return Inertia::render('Reports/Finance', [
+            'summary' => [
+                'total_balance' => $totalBalance,
+                'monthly_income' => $inflow,
+                'monthly_expense' => $outflow,
+                'savings_rate' => $savingsRate,
+                'income_change_pct' => $incomeChangePct,
+                'spent_change_pct' => $spentChangePct,
+            ],
+            'stats' => [
+                'net_balance' => $totalBalance,
+                'monthly_income' => $inflow,
+                'monthly_expenses' => $outflow,
+            ],
+            'sparkline' => $sparklineData,
+            'cashflow' => $cashflowTrends,
+            'spending_categories' => $spendingCategories,
+            'accounts' => $accounts,
+            'contacts' => $mockContacts,
+            'recent_transactions' => $recentTransactions,
+            'reminders' => $reminders,
+            'categories' => $categoriesData,
+            'current_month' => $month,
         ]);
     }
 }

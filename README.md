@@ -1,16 +1,16 @@
 <div align="center">
   <br />
   
-  # ⚡ FinFlow
-  ### **Premium Financial Ledger & SaaS Billing Boilerplate**
+  # 📦 CashBox
+  ### **Premium Multi-Account Financial Ledger, Loans & SaaS Billing OS**
   
   [![Laravel 13](https://img.shields.io/badge/Laravel-13.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
   [![Vue 3](https://img.shields.io/badge/Vue.js-3.x-4FC08D?style=for-the-badge&logo=vue.js&logoColor=white)](https://vuejs.org)
   [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.x-06B6D4?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
-  [![Pest Tests](https://img.shields.io/badge/Tests-86_Passed-8B5CF6?style=for-the-badge&logo=pest&logoColor=white)](https://pestphp.com)
+  [![Pest Tests](https://img.shields.io/badge/Tests-88_Passed-8B5CF6?style=for-the-badge&logo=pest&logoColor=white)](https://pestphp.com)
   
   <p align="center">
-    A premium, high-contrast personal finance assistant, budget planner, and SaaS license manager.
+    A premium, high-contrast personal finance assistant, multi-account ledger, budget planner, and SaaS license manager.
     <br />
     Engineered with a streamlined monolithic stack for fast iteration, high security, and elegant usability.
   </p>
@@ -18,12 +18,22 @@
 
 ---
 
-## 💎 Core Highlights
+## 💎 Core Highlights & Features
 
-### 📊 Financial Ledger & Smart Budgeting
-- **Real-Time Health**: Instantly tracks cumulative savings, monthly cash flow, and spending ratios.
+### 📊 Multi-Account Transactions Ledger
+- **Interactive Ledger**: Comprehensive search and multi-select filtering (by type, category, or account source) with dynamic top stats panels (Total Income, Total Expense, Net Flow) responding to filters in real time.
+- **Date-based Constraints**: Constrained to default search boundaries for the *current calendar month* (automatically computed) with interactive start and end date pickers.
+- **Pagination**: Fully integrated 15-item pagination on both frontend and backend for large transaction histories.
+- **Transfer Modals**: Easy-to-use modals for registering Income, Expenses, and Double-Entry transfers between different accounts.
+
+### 🏷️ Categorized Budgeting & Limit Alarms
 - **Dynamic Category Limits**: Sets category-wise spending targets with warning progress bars that automatically change color (Green $\rightarrow$ Yellow warning $\rightarrow$ Red alert) as thresholds are reached.
-- **Seeded Accounts**: Automatically provisions a default **"Cash"** account (with initial balance `$0.00`) and **10 pre-defined financial categories** for every new sign-up.
+- **Dedicated Categories Page**: Interactive cards showing item statistics for both income and expense categories, with responsive creation modals.
+- **Seeded Accounts**: Automatically provisions a default **"Cash"** account (with initial balance `৳0.00`) and **10 pre-defined financial categories** for every new sign-up.
+
+### 💰 Loans & Debt Statements
+- **Loan Tracking**: Track money lent to clients or borrowed from institutions with dynamic outstanding balances.
+- **Repayment Tracking**: Log repayments instantly to update active loan balances.
 
 ### 🔑 SaaS Licenses & Revenue Tracking
 - **Automated Renewals**: Set billing cycles (monthly/yearly), next renewal dates, and status. Logging a payment automatically registers income and advances the renewal date.
@@ -33,10 +43,19 @@
 - **Granular Permissions Control**: Superadmins can enable or disable modules (Ledger, Budgets, SaaS, Loans, Recurring) for any user with real-time checkbox binds.
 - **Permission-Driven Sidebar**: Navigation links in the left-sidebar automatically show/hide on the client-side based on user access.
 - **Security Banning**: Toggle account bans instantly. Banned sessions are terminated on their next request via global middleware.
-- **Self-Action Guardrails**: Logic blocks prevents superadmins from banning or deleting their own accounts.
+- **Self-Action Guardrails**: Logic blocks prevent superadmins from banning or deleting their own accounts.
 
 ### 🔔 FCM Push Notifications
 - **Browser Subscriptions**: Push notification permission modal with background token registration.
+
+---
+
+## 🇧🇩 Currency, Design & SEO Optimizations
+
+- **Bangladeshi Taka (৳)**: The entire application has been customized to use the Bangladeshi Taka symbol (`৳`) across all layout views, inputs, transaction ledgers, summaries, and forecasting tables.
+- **Premium Safe Lock Logo**: Designed a colorful vector safe dial SVG logo using vibrant gradients (Indigo-to-Rose and Emerald-to-Blue) representing secure capital vaults.
+- **High-contrast Favicon**: Included a dark-backed gradient SVG favicon that remains readable across light and dark browser themes.
+- **SEO & OpenGraph Prep**: Pre-configured meta tags for Facebook OpenGraph and Twitter cards, paired with a custom marketing graphics banner (`og-image.png`).
 
 ---
 
@@ -78,7 +97,8 @@
 │   ├── migrations/                       # SQL table creation migrations files
 │   └── seeders/                          # Database default entries seeders
 ├── public/
-│   └── favicon.svg                       # Customized high-fidelity vector favicon
+│   ├── favicon.svg                       # Customized high-fidelity vector favicon
+│   └── og-image.png                      # OpenGraph social sharing preview image
 ├── resources/
 │   ├── css/
 │   │   └── app.css                       # Modernized Tailwind styles stylesheet
@@ -103,7 +123,7 @@
 
 ---
 
-## 🛠️ Stack Architecture
+## 🛠Stack Architecture
 
 ```mermaid
 graph TD
@@ -168,7 +188,7 @@ Open [http://127.0.0.1:8000](http://127.0.0.1:8000) in your web browser.
 
 ## 🧪 Comprehensive Quality Assurance
 
-We maintain **86 feature test cases** validating authentication limits, category controls, SaaS logs, and superadmin middleware gates.
+We maintain **88 feature test cases** validating authentication limits, category controls, SaaS logs, and superadmin middleware gates.
 
 ```bash
 php artisan test
@@ -176,8 +196,8 @@ php artisan test
 
 ### Test Metrics
 ```text
-Tests:  86 passed (315 assertions)
-Time:   1.66s
+Tests:  88 passed (348 assertions)
+Time:   1.77s
 ```
 
 ---

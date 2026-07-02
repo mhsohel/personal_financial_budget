@@ -43,16 +43,19 @@ Route::middleware('auth')->group(function () {
     // Ledger Module Routes
     Route::middleware('module.permission:ledger')->group(function () {
         // Categories
+        Route::get('/categories', [App\Http\Controllers\CategoryController::class, 'index'])->name('categories.index');
         Route::post('/categories', [App\Http\Controllers\CategoryController::class, 'store'])->name('categories.store');
         Route::patch('/categories/{category}', [App\Http\Controllers\CategoryController::class, 'update'])->name('categories.update');
         Route::delete('/categories/{category}', [App\Http\Controllers\CategoryController::class, 'destroy'])->name('categories.destroy');
 
         // Accounts
+        Route::get('/accounts', [App\Http\Controllers\AccountController::class, 'index'])->name('accounts.index');
         Route::post('/accounts', [App\Http\Controllers\AccountController::class, 'store'])->name('accounts.store');
         Route::patch('/accounts/{account}', [App\Http\Controllers\AccountController::class, 'update'])->name('accounts.update');
         Route::delete('/accounts/{account}', [App\Http\Controllers\AccountController::class, 'destroy'])->name('accounts.destroy');
 
         // Transactions
+        Route::get('/transactions', [App\Http\Controllers\TransactionController::class, 'index'])->name('transactions.index');
         Route::post('/transactions', [App\Http\Controllers\TransactionController::class, 'store'])->name('transactions.store');
         Route::patch('/transactions/{transaction}', [App\Http\Controllers\TransactionController::class, 'update'])->name('transactions.update');
         Route::delete('/transactions/{transaction}', [App\Http\Controllers\TransactionController::class, 'destroy'])->name('transactions.destroy');
@@ -63,11 +66,16 @@ Route::middleware('auth')->group(function () {
 
         // Reports
         Route::get('/reports', [App\Http\Controllers\ReportController::class, 'index'])->name('reports.index');
+        Route::get('/reports/monthly', [App\Http\Controllers\ReportController::class, 'monthly'])->name('reports.monthly');
         Route::get('/reports/forecast', [App\Http\Controllers\ReportController::class, 'forecast'])->name('reports.forecast');
+        Route::get('/reports/finance', function () {
+            return redirect()->route('dashboard');
+        })->name('reports.finance');
     });
 
     // Budgets Module Routes
     Route::middleware('module.permission:budgets')->group(function () {
+        Route::get('/budgets', [App\Http\Controllers\BudgetController::class, 'index'])->name('budgets.index');
         Route::post('/budgets', [App\Http\Controllers\BudgetController::class, 'store'])->name('budgets.store');
     });
 

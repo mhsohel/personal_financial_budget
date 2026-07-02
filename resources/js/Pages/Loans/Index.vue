@@ -24,10 +24,12 @@ const props = defineProps({
 
 // Format Currency
 const formatCurrency = (value) => {
-    return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-    }).format(value);
+    const val = parseFloat(value) || 0;
+    const formatted = new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(Math.abs(val));
+    return (val < 0 ? '-' : '') + '৳' + formatted;
 };
 
 // Modals State
@@ -121,10 +123,10 @@ const filteredLoans = computed(() => {
                         class="px-4 py-2.5 bg-indigo-600 dark:bg-indigo-650 hover:bg-indigo-700 dark:hover:bg-indigo-600 text-white font-bold text-xs rounded-xl shadow-md transition duration-150 flex items-center gap-1.5"
                         id="add-loan-btn"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                         </svg>
-                        New Loan / Debt
+                        Add New
                     </button>
                 </div>
             </div>
@@ -420,7 +422,7 @@ const filteredLoans = computed(() => {
 
                             <!-- Amount -->
                             <div>
-                                <label for="loan-amount" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Principal Amount ($)</label>
+                                <label for="loan-amount" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Principal Amount (৳)</label>
                                 <input 
                                     type="number" 
                                     step="0.01" 
@@ -532,7 +534,7 @@ const filteredLoans = computed(() => {
 
                             <!-- Repayment Amount -->
                             <div>
-                                <label for="repay-amount" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Repayment Amount ($)</label>
+                                <label for="repay-amount" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Repayment Amount (৳)</label>
                                 <input 
                                     type="number" 
                                     step="0.01" 

@@ -17,6 +17,10 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
         
+        if ($user->hasPermissionToModule('ledger')) {
+            return (new \App\Http\Controllers\ReportController())->finance($request);
+        }
+        
         // Default to current month if not specified
         $month = $request->input('month', Carbon::now()->format('Y-m'));
         $startDate = Carbon::createFromFormat('Y-m', $month)->startOfMonth();
@@ -61,13 +65,18 @@ class DashboardController extends Controller
                     ->whereBetween('transaction_date', [$startDate, $endDate])
                     ->sum('amount');
 
-                // Find budget limit for this month
-                $budget = $category->budgets()
-                    ->where('month', $month)
-                    ->first();
-
-                $limit = $budget ? (float) $budget->amount : 0.0;
-                $percentage = $limit > 0 ? round(($spent / $limit) * 100, 2) : 0.0;
+                // Find budget limit and calculate progress based on type
+                if ($category->type === 'expense') {
+                    $budget = $category->budgets()->whereNull('month')->first();
+                    $limit = $budget ? (float) $budget->amount : 0.0;
+                    $percentage = $limit > 0 ? round(($spent / $limit) * 100, 2) : 0.0;
+                    $deficit = 0.0;
+                } else {
+                    $budget = $category->budgets()->where('month', $month)->first();
+                    $limit = $budget ? (float) $budget->amount : 0.0;
+                    $percentage = $limit > 0 ? round(($earned / $limit) * 100, 2) : 0.0;
+                    $deficit = $limit > 0 ? max(0.0, $limit - $earned) : 0.0;
+                }
 
                 return [
                     'id' => $category->id,
@@ -78,6 +87,7 @@ class DashboardController extends Controller
                     'earned' => (float) $earned,
                     'budget_limit' => $limit,
                     'percentage_used' => $percentage,
+                    'deficit' => (float) $deficit,
                 ];
             });
 

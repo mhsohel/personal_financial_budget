@@ -30,7 +30,7 @@ class StoreBudgetRequest extends FormRequest
                 }),
             ],
             'amount' => ['required', 'numeric', 'min:0'],
-            'month' => ['required', 'string', 'regex:/^\d{4}-\d{2}$/'],
+            'month' => ['nullable', 'string', 'regex:/^\d{4}-\d{2}$/'],
         ];
     }
 }
